@@ -512,13 +512,22 @@ function calculateTrade() {
     const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
     const amountType = document.querySelector('input[name="amountType"]:checked').value;
     
-    let total;
+    let total, lotAmount;
     if (amountType === 'usd') {
-        // USD ile işlem
+        // USD ile işlem - lot miktarını hesapla
         total = amount;
+        lotAmount = amount / price;
+        
+        // Lot miktarını göster
+        document.getElementById('lotEquivalent').style.display = 'flex';
+        document.getElementById('lotAmount').textContent = formatPrice(lotAmount) + ' Lot';
     } else {
         // Lot ile işlem
         total = amount * price;
+        lotAmount = amount;
+        
+        // Lot miktarını gizle
+        document.getElementById('lotEquivalent').style.display = 'none';
     }
     
     const margin = total / leverage;
@@ -701,6 +710,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <div class="d-flex justify-content-between mb-1">
                                                     <small class="text-muted">Toplam Değer:</small>
                                                     <small class="fw-bold" id="totalValue">$0.00</small>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-1" id="lotEquivalent" style="display: none;">
+                                                    <small class="text-muted">Lot Miktarı:</small>
+                                                    <small class="fw-bold" id="lotAmount">0.00 Lot</small>
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-1">
                                                     <small class="text-muted calculation-label">Gerekli Margin:</small>
