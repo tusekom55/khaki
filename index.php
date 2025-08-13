@@ -165,16 +165,27 @@ include 'includes/header.php';
                                             data-name="<?php echo $market['name']; ?>" 
                                             data-price="<?php echo $market['price']; ?>" 
                                             data-action="buy"
+                                            data-type="simple"
                                             onclick="event.stopPropagation(); openTradeModal(this);">
-                                        <i class="fas fa-arrow-up me-1"></i>AL
+                                        <i class="fas fa-shopping-cart me-1"></i>AL
                                     </button>
                                     <button type="button" class="btn btn-danger btn-sm trade-btn" 
                                             data-symbol="<?php echo $market['symbol']; ?>" 
                                             data-name="<?php echo $market['name']; ?>" 
                                             data-price="<?php echo $market['price']; ?>" 
                                             data-action="sell"
+                                            data-type="simple"
                                             onclick="event.stopPropagation(); openTradeModal(this);">
-                                        <i class="fas fa-arrow-down me-1"></i>SAT
+                                        <i class="fas fa-hand-holding-usd me-1"></i>SAT
+                                    </button>
+                                    <button type="button" class="btn btn-warning btn-sm trade-btn" 
+                                            data-symbol="<?php echo $market['symbol']; ?>" 
+                                            data-name="<?php echo $market['name']; ?>" 
+                                            data-price="<?php echo $market['price']; ?>" 
+                                            data-action="leverage"
+                                            data-type="leverage"
+                                            onclick="event.stopPropagation(); openTradeModal(this);">
+                                        <i class="fas fa-bolt me-1"></i>KALDIRAÇ
                                     </button>
                                 </div>
                             </td>
@@ -348,6 +359,7 @@ function openTradeModal(button) {
     const name = button.dataset.name;
     const price = parseFloat(button.dataset.price);
     const action = button.dataset.action;
+    const type = button.dataset.type; // simple or leverage
     
     // Update modal content
     document.getElementById('modalSymbol').textContent = symbol;
@@ -355,23 +367,8 @@ function openTradeModal(button) {
     document.getElementById('modalPrice').textContent = formatPrice(price);
     document.getElementById('modalChange').textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
     
-    // Set action (buy/sell)
-    const buyTab = document.getElementById('buy-tab');
-    const sellTab = document.getElementById('sell-tab');
-    const buyPane = document.getElementById('buy-pane');
-    const sellPane = document.getElementById('sell-pane');
-    
-    if (action === 'buy') {
-        buyTab.classList.add('active');
-        sellTab.classList.remove('active');
-        buyPane.classList.add('show', 'active');
-        sellPane.classList.remove('show', 'active');
-    } else {
-        sellTab.classList.add('active');
-        buyTab.classList.remove('active');
-        sellPane.classList.add('show', 'active');
-        buyPane.classList.remove('show', 'active');
-    }
+    // Configure modal based on type
+    configureModalForType(type, action);
     
     // Update TradingView widget
     updateTradingViewWidget(symbol);
@@ -379,6 +376,116 @@ function openTradeModal(button) {
     // Show modal
     const modal = new bootstrap.Modal(document.getElementById('tradeModal'));
     modal.show();
+}
+
+function configureModalForType(type, action) {
+    const buyTab = document.getElementById('buy-tab');
+    const sellTab = document.getElementById('sell-tab');
+    const buyPane = document.getElementById('buy-pane');
+    const sellPane = document.getElementById('sell-pane');
+    
+    if (type === 'simple') {
+        // Simple buy/sell - hide leverage elements
+        setupSimpleTrading(action);
+    } else if (type === 'leverage') {
+        // Leverage trading - show all elements
+        setupLeverageTrading();
+    }
+    
+    // Set active tab based on action
+    if (action === 'buy' || action === 'leverage') {
+        buyTab.classList.add('active');
+        sellTab.classList.remove('active');
+        buyPane.classList.add('show', 'active');
+        sellPane.classList.remove('show', 'active');
+    } else if (action === 'sell') {
+        sellTab.classList.add('active');
+        buyTab.classList.remove('active');
+        sellPane.classList.add('show', 'active');
+        buyPane.classList.remove('show', 'active');
+    }
+}
+
+function setupSimpleTrading(action) {
+    // Update tab labels for simple trading
+    const buyTab = document.getElementById('buy-tab');
+    const sellTab = document.getElementById('sell-tab');
+    
+    buyTab.innerHTML = '<i class="fas fa-shopping-cart me-1"></i>SATIN AL';
+    sellTab.innerHTML = '<i class="fas fa-hand-holding-usd me-1"></i>SAT';
+    
+    // Hide leverage controls
+    const leverageControls = document.querySelectorAll('.leverage-control');
+    leverageControls.forEach(control => {
+        control.style.display = 'none';
+    });
+    
+    // Hide stop loss / take profit for simple trading
+    const advancedControls = document.querySelectorAll('.advanced-control');
+    advancedControls.forEach(control => {
+        control.style.display = 'none';
+    });
+    
+    // Update button text
+    const buyButton = document.querySelector('#buy-pane button[type="submit"]');
+    const sellButton = document.querySelector('#sell-pane button[type="submit"]');
+    
+    buyButton.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>SATIN AL';
+    sellButton.innerHTML = '<i class="fas fa-hand-holding-usd me-2"></i>SAT';
+    
+    // Update calculation labels
+    updateSimpleCalculationLabels();
+}
+
+function setupLeverageTrading() {
+    // Update tab labels for leverage trading
+    const buyTab = document.getElementById('buy-tab');
+    const sellTab = document.getElementById('sell-tab');
+    
+    buyTab.innerHTML = '<i class="fas fa-arrow-up me-1"></i>LONG';
+    sellTab.innerHTML = '<i class="fas fa-arrow-down me-1"></i>SHORT';
+    
+    // Show leverage controls
+    const leverageControls = document.querySelectorAll('.leverage-control');
+    leverageControls.forEach(control => {
+        control.style.display = 'block';
+    });
+    
+    // Show advanced controls
+    const advancedControls = document.querySelectorAll('.advanced-control');
+    advancedControls.forEach(control => {
+        control.style.display = 'block';
+    });
+    
+    // Update button text
+    const buyButton = document.querySelector('#buy-pane button[type="submit"]');
+    const sellButton = document.querySelector('#sell-pane button[type="submit"]');
+    
+    buyButton.innerHTML = '<i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ';
+    sellButton.innerHTML = '<i class="fas fa-arrow-down me-2"></i>SHORT POZISYON AÇ';
+    
+    // Update calculation labels
+    updateLeverageCalculationLabels();
+}
+
+function updateSimpleCalculationLabels() {
+    // Update calculation display for simple trading
+    const labels = document.querySelectorAll('.calculation-label');
+    labels.forEach(label => {
+        if (label.textContent === 'Gerekli Margin:') {
+            label.textContent = 'Ödenecek Tutar:';
+        }
+    });
+}
+
+function updateLeverageCalculationLabels() {
+    // Update calculation display for leverage trading
+    const labels = document.querySelectorAll('.calculation-label');
+    labels.forEach(label => {
+        if (label.textContent === 'Ödenecek Tutar:') {
+            label.textContent = 'Gerekli Margin:';
+        }
+    });
 }
 
 function updateTradingViewWidget(symbol) {
@@ -491,7 +598,7 @@ function calculateTrade() {
                                             </div>
                                         </div>
                                         
-                                        <div class="mb-3">
+                                        <div class="mb-3 leverage-control">
                                             <label class="form-label">Kaldıraç <span id="leverageDisplay" class="badge bg-primary">1x</span></label>
                                             <input type="range" class="form-range" id="leverage" min="1" max="100" value="1" 
                                                    oninput="calculateTrade()">
@@ -501,7 +608,7 @@ function calculateTrade() {
                                             </div>
                                         </div>
                                         
-                                        <div class="row mb-3">
+                                        <div class="row mb-3 advanced-control">
                                             <div class="col-6">
                                                 <label class="form-label">Stop Loss</label>
                                                 <div class="input-group">
@@ -526,7 +633,7 @@ function calculateTrade() {
                                                     <small class="fw-bold" id="totalValue">$0.00</small>
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted">Gerekli Margin:</small>
+                                                    <small class="text-muted calculation-label">Gerekli Margin:</small>
                                                     <small class="fw-bold" id="requiredMargin">$0.00</small>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
@@ -553,7 +660,7 @@ function calculateTrade() {
                                             </div>
                                         </div>
                                         
-                                        <div class="mb-3">
+                                        <div class="mb-3 leverage-control">
                                             <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
                                             <input type="range" class="form-range" min="1" max="100" value="1">
                                             <div class="d-flex justify-content-between">
@@ -562,7 +669,7 @@ function calculateTrade() {
                                             </div>
                                         </div>
                                         
-                                        <div class="row mb-3">
+                                        <div class="row mb-3 advanced-control">
                                             <div class="col-6">
                                                 <label class="form-label">Stop Loss</label>
                                                 <div class="input-group">
@@ -587,7 +694,7 @@ function calculateTrade() {
                                                     <small class="fw-bold">$0.00</small>
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted">Gerekli Margin:</small>
+                                                    <small class="text-muted calculation-label">Gerekli Margin:</small>
                                                     <small class="fw-bold">$0.00</small>
                                                 </div>
                                                 <div class="d-flex justify-content-between">
