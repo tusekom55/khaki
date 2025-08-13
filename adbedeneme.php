@@ -1,37 +1,78 @@
 <?php
 /* ===== AYARLAR ===== */
 $dbHost = 'localhost';
-$dbUser = 'u225998063_seccc';
-$dbPass = '123456Tubb';
-$dbName = 'u225998063_hurrra';
-$apiKey = 'Pt5IwxHnQLEUskikphYk55M186mqPCWL'; // https://financialmodelingprep.com
+$dbUser = 'DB_KULLANICI';
+$dbPass = 'DB_SIFRE';
+$dbName = 'DB_ADI';
+$apiKey = 'YOUR_FMP_API_KEY'; // https://financialmodelingprep.com
 
-$symbol = strtoupper($_GET['symbol'] ?? 'ADBE'); // istersen ?symbol=MSFT gibi kullan
+// İsteğe bağlı: sadece belli kategori (ör. us_stocks) için çalıştırmak istersen URL'ye ?cat=us_stocks ekle
+$catParam = isset($_GET['cat']) ? $_GET['cat'] : null;
+// Ekstra dışlanacak semboller (virgüllü) ?exclude=TSLA,NVDA
+$excludeParam = isset($_GET['exclude']) ? $_GET['exclude'] : '';
 
-/* ===== DB ===== */
+/* ===== DB BAĞLANTI ===== */
 $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-$mysqli->set_charset('utf8mb4');
 if ($mysqli->connect_error) { http_response_code(500); exit('DB bağlantı hatası: '.$mysqli->connect_error); }
+$mysqli->set_charset('utf8mb4');
 
-/* ===== API ===== */
-$url = 'https://financialmodelingprep.com/api/v3/quote/' . urlencode($symbol) . '?apikey=' . urlencode($apiKey);
-$json = @file_get_contents($url);
-if ($json === false) { http_response_code(502); exit('API okunamadı'); }
-$arr = json_decode($json, true);
-if (!is_array($arr) || empty($arr[0]['symbol'])) { http_response_code(404); exit('Sembol bulunamadı'); }
+/* ===== SEMBOL LİSTESİ (DB'den) ===== */
+$ex = ['ADBE']; // her halükârda ADBE hariç
+if ($excludeParam) {
+  foreach (explode(',', $excludeParam) as $e) {
+    $e = strtoupper(trim($e)); if ($e) $ex[] = $e;
+  }
+}
+$exList = "'" . implode("','", array_map([$mysqli,'real_escape_string'], array_unique($ex))) . "'";
 
-$q = $arr[0];
-$chg = isset($q['changesPercentage']) ? (float)str_replace(['%','+'], '', $q['changesPercentage']) : 0.0;
+$where = "WHERE symbol NOT IN ($exList)";
+if ($catParam) $where .= " AND category='".$mysqli->real_escape_string($catParam)."'";
 
-$name  = $q['name']   ?? $symbol;
-$price = (float)($q['price']    ?? 0);
-$vol   = (float)($q['volume']   ?? 0);
-$high  = (float)($q['dayHigh']  ?? 0);
-$low   = (float)($q['dayLow']   ?? 0);
-$mcap  = (float)($q['marketCap']?? 0);
-$cat   = 'us_stocks'; // ADBE için sabit; istersen query ile değiştir
+// Mevcut satırlardan symbol + category + name alıyoruz (category'yi korumak için)
+$sql = "SELECT symbol, category, name FROM markets $where";
+$res = $mysqli->query($sql);
+$existing = [];
+while ($row = $res->fetch_assoc()) $existing[$row['symbol']] = $row;
 
-/* ===== UPSERT ===== */
+$symbols = array_keys($existing);
+if (!$symbols) { header('Content-Type: application/json'); echo json_encode(['updated'=>0,'msg'=>'Güncellenecek sembol bulunamadı']); exit; }
+
+/* ===== FMP'DEN QUOTE AL (batch) =====
+   /api/v3/quote/AAPL,MSFT,... => price, dayHigh, dayLow, volume, changesPercentage, marketCap, name
+*/
+function fmp_fetch_quotes($symbols, $apiKey) {
+  $out = [];
+  foreach (array_chunk($symbols, 100) as $chunk) {
+    $url = 'https://financialmodelingprep.com/api/v3/quote/' . implode(',', $chunk) . '?apikey=' . urlencode($apiKey);
+    $json = @file_get_contents($url);
+    if ($json === false) continue;
+    $arr = json_decode($json, true);
+    if (!is_array($arr)) continue;
+
+    foreach ($arr as $q) {
+      if (empty($q['symbol'])) continue;
+      $sym = strtoupper($q['symbol']);
+      $chg = isset($q['changesPercentage']) ? (float)str_replace(['%','+'], '', $q['changesPercentage']) : 0.0;
+      $out[$sym] = [
+        'symbol' => $sym,
+        'name'   => $q['name'] ?? $sym,
+        'price'  => (float)($q['price']   ?? 0),
+        'high'   => (float)($q['dayHigh'] ?? 0),
+        'low'    => (float)($q['dayLow']  ?? 0),
+        'vol'    => (float)($q['volume']  ?? 0),
+        'chg'    => $chg,
+        'mcap'   => (float)($q['marketCap'] ?? 0),
+      ];
+    }
+  }
+  return $out;
+}
+
+$quotes = fmp_fetch_quotes($symbols, $apiKey);
+
+/* ===== UPSERT =====
+   markets.symbol UNIQUE -> INSERT ... ON DUPLICATE KEY UPDATE
+*/
 $sql = "INSERT INTO markets
  (symbol, name, price, change_24h, volume_24h, high_24h, low_24h, market_cap, category)
  VALUES (?,?,?,?,?,?,?,?,?)
@@ -47,18 +88,29 @@ $sql = "INSERT INTO markets
 
 $stmt = $mysqli->prepare($sql);
 if (!$stmt) { http_response_code(500); exit('Prepare hatası: '.$mysqli->error); }
-$stmt->bind_param('ssdddddds', $symbol, $name, $price, $chg, $vol, $high, $low, $mcap, $cat);
-$ok = $stmt->execute();
+
+$updated = 0; $skipped = [];
+foreach ($symbols as $s) {
+  if (!isset($quotes[$s])) { $skipped[] = $s; continue; }
+  $q = $quotes[$s];
+
+  // Mevcut kategoriyi koru; yoksa catParam ya da 'us_stocks'
+  $cat = $existing[$s]['category'] ?? ($catParam ?: 'us_stocks');
+
+  $stmt->bind_param(
+    'ssdddddds',
+    $q['symbol'], $q['name'], $q['price'], $q['chg'], $q['vol'],
+    $q['high'], $q['low'], $q['mcap'], $cat
+  );
+  if ($stmt->execute()) $updated++;
+}
 $stmt->close();
 
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode([
-  'ok'      => (bool)$ok,
-  'symbol'  => $symbol,
-  'price'   => $price,
-  'chg%'    => $chg,
-  'high'    => $high,
-  'low'     => $low,
-  'volume'  => $vol,
-  'market_cap' => $mcap
+  'ok' => true,
+  'updated' => $updated,
+  'count' => count($symbols),
+  'skipped' => $skipped,
+  'category' => $catParam ?: 'ALL'
 ], JSON_UNESCAPED_UNICODE);
