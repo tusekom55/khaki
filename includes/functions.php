@@ -576,4 +576,249 @@ function logActivity($user_id, $action, $details = '') {
     $stmt = $db->prepare($query);
     $stmt->execute([$user_id, $action, $details, $_SERVER['REMOTE_ADDR'] ?? '']);
 }
+
+// FinancialModelingPrep API Functions
+/**
+ * Convert our symbols to FMP-compatible format
+ */
+function convertSymbolToFMP($symbol, $category) {
+    $conversions = [
+        'us_stocks' => [
+            'AAPL' => 'AAPL', 'MSFT' => 'MSFT', 'GOOGL' => 'GOOGL', 'AMZN' => 'AMZN', 
+            'TSLA' => 'TSLA', 'META' => 'META', 'NVDA' => 'NVDA', 'JPM' => 'JPM',
+            'JNJ' => 'JNJ', 'V' => 'V', 'WMT' => 'WMT', 'PG' => 'PG', 'UNH' => 'UNH',
+            'DIS' => 'DIS', 'HD' => 'HD', 'PYPL' => 'PYPL', 'BAC' => 'BAC', 
+            'ADBE' => 'ADBE', 'CRM' => 'CRM', 'NFLX' => 'NFLX'
+        ],
+        'eu_stocks' => [
+            'SAP.DE' => 'SAP', 'ASML.AS' => 'ASML', 'MC.PA' => 'MC', 'NESN.SW' => 'NESN',
+            'ROG.SW' => 'ROG', 'AZN.L' => 'AZN', 'SHEL.L' => 'SHEL', 'RDSA.AS' => 'RDSA',
+            'SIE.DE' => 'SIE', 'OR.PA' => 'OR'
+        ],
+        'world_stocks' => [
+            'TSM' => 'TSM', 'BABA' => 'BABA', 'TCEHY' => 'TCEHY', '7203.T' => '7203.T',
+            'SNY' => 'SNY', 'TM' => 'TM', 'SONY' => 'SONY', 'ING' => 'ING',
+            'UL' => 'UL', 'RIO.L' => 'RIO'
+        ],
+        'forex_major' => [
+            'EURUSD=X' => 'EURUSD', 'GBPUSD=X' => 'GBPUSD', 'USDJPY=X' => 'USDJPY',
+            'USDCHF=X' => 'USDCHF', 'AUDUSD=X' => 'AUDUSD', 'USDCAD=X' => 'USDCAD',
+            'NZDUSD=X' => 'NZDUSD', 'EURJPY=X' => 'EURJPY'
+        ],
+        'forex_minor' => [
+            'EURGBP=X' => 'EURGBP', 'GBPJPY=X' => 'GBPJPY', 'EURCHF=X' => 'EURCHF',
+            'AUDJPY=X' => 'AUDJPY', 'GBPCHF=X' => 'GBPCHF', 'EURAUD=X' => 'EURAUD',
+            'CADJPY=X' => 'CADJPY', 'AUDCAD=X' => 'AUDCAD', 'NZDJPY=X' => 'NZDJPY',
+            'CHFJPY=X' => 'CHFJPY'
+        ],
+        'forex_exotic' => [
+            'USDTRY=X' => 'USDTRY', 'EURTRY=X' => 'EURTRY', 'GBPTRY=X' => 'GBPTRY',
+            'USDSEK=X' => 'USDSEK', 'USDNOK=X' => 'USDNOK', 'USDPLN=X' => 'USDPLN',
+            'EURSEK=X' => 'EURSEK', 'USDZAR=X' => 'USDZAR', 'USDMXN=X' => 'USDMXN',
+            'USDHUF=X' => 'USDHUF'
+        ],
+        'commodities' => [
+            'GC=F' => 'GCUSD', 'SI=F' => 'SIUSD', 'CL=F' => 'CLUSD', 'BZ=F' => 'BZUSD',
+            'NG=F' => 'NGUSD', 'HG=F' => 'HGUSD', 'ZW=F' => 'ZWUSD', 'ZC=F' => 'ZCUSD',
+            'SB=F' => 'SBUSD', 'KC=F' => 'KCUSD'
+        ],
+        'indices' => [
+            '^DJI' => 'DJI', '^GSPC' => 'SPX', '^IXIC' => 'IXIC', '^RUT' => 'RUT',
+            '^VIX' => 'VIX', '^GDAXI' => 'GDAXI', '^FTSE' => 'UKX', '^FCHI' => 'CAC',
+            '^N225' => 'N225', '^HSI' => 'HSI'
+        ]
+    ];
+    
+    return $conversions[$category][$symbol] ?? $symbol;
+}
+
+/**
+ * Make FMP API request with error handling and rate limiting
+ */
+function makeFMPRequest($endpoint, $params = []) {
+    static $request_count = 0;
+    static $last_request_time = 0;
+    
+    // Simple rate limiting - 1 request per second
+    $current_time = time();
+    if ($current_time === $last_request_time) {
+        sleep(1);
+    }
+    $last_request_time = $current_time;
+    
+    $request_count++;
+    
+    // Add API key to parameters
+    $params['apikey'] = FMP_API_KEY;
+    
+    // Build URL
+    $url = FMP_API_URL . $endpoint . '?' . http_build_query($params);
+    
+    // Make request with timeout and user agent
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 30,
+            'user_agent' => 'GlobalBorsa/1.0',
+            'header' => 'Accept: application/json'
+        ]
+    ]);
+    
+    $response = @file_get_contents($url, false, $context);
+    
+    if ($response === false) {
+        error_log("FMP API Error: Failed to fetch $url");
+        return ['success' => false, 'error' => 'HTTP request failed'];
+    }
+    
+    $data = json_decode($response, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("FMP API Error: JSON decode error - " . json_last_error_msg());
+        return ['success' => false, 'error' => 'JSON decode error'];
+    }
+    
+    // Check for API error messages
+    if (isset($data['Error Message'])) {
+        error_log("FMP API Error: " . $data['Error Message']);
+        return ['success' => false, 'error' => $data['Error Message']];
+    }
+    
+    return ['success' => true, 'data' => $data];
+}
+
+/**
+ * Fetch financial data from FMP API with batch optimization
+ */
+function fetchFinancialDataFromFMP($symbols, $category) {
+    if (empty($symbols)) return false;
+    
+    // Convert symbols to FMP format
+    $fmp_symbols = [];
+    $symbol_mapping = [];
+    
+    foreach ($symbols as $original_symbol) {
+        $fmp_symbol = convertSymbolToFMP($original_symbol, $category);
+        $fmp_symbols[] = $fmp_symbol;
+        $symbol_mapping[$fmp_symbol] = $original_symbol;
+    }
+    
+    $results = [];
+    
+    // Handle different categories with appropriate endpoints
+    if (in_array($category, ['forex_major', 'forex_minor', 'forex_exotic'])) {
+        // Forex data - batch request to fx endpoint
+        foreach ($fmp_symbols as $fmp_symbol) {
+            if (strlen($fmp_symbol) >= 6) {
+                $from = substr($fmp_symbol, 0, 3);
+                $to = substr($fmp_symbol, 3, 3);
+                
+                $result = makeFMPRequest('/fx', ['from' => $from, 'to' => $to]);
+                
+                if ($result['success'] && !empty($result['data'])) {
+                    $data = is_array($result['data']) ? $result['data'][0] : $result['data'];
+                    $original_symbol = $symbol_mapping[$fmp_symbol];
+                    
+                    $results[] = [
+                        'symbol' => $original_symbol,
+                        'longName' => getCompanyName($original_symbol, $category),
+                        'regularMarketPrice' => $data['rate'] ?? $data['price'] ?? 0,
+                        'regularMarketChange' => 0, // FMP doesn't provide change for forex
+                        'regularMarketChangePercent' => 0,
+                        'regularMarketVolume' => 0,
+                        'regularMarketDayHigh' => $data['rate'] ?? $data['price'] ?? 0,
+                        'regularMarketDayLow' => $data['rate'] ?? $data['price'] ?? 0,
+                        'marketCap' => 0
+                    ];
+                }
+            }
+        }
+    } else {
+        // Stocks, commodities, indices - batch quote request
+        $symbols_string = implode(',', $fmp_symbols);
+        $result = makeFMPRequest('/quote/' . $symbols_string);
+        
+        if ($result['success'] && !empty($result['data'])) {
+            foreach ($result['data'] as $quote) {
+                $fmp_symbol = $quote['symbol'] ?? '';
+                $original_symbol = $symbol_mapping[$fmp_symbol] ?? $fmp_symbol;
+                
+                // Map FMP fields to our expected format
+                $results[] = [
+                    'symbol' => $original_symbol,
+                    'longName' => $quote['name'] ?? getCompanyName($original_symbol, $category),
+                    'regularMarketPrice' => $quote['price'] ?? 0,
+                    'regularMarketChange' => $quote['change'] ?? 0,
+                    'regularMarketChangePercent' => $quote['changesPercentage'] ?? 0,
+                    'regularMarketVolume' => $quote['volume'] ?? 0,
+                    'regularMarketDayHigh' => $quote['dayHigh'] ?? ($quote['price'] ?? 0),
+                    'regularMarketDayLow' => $quote['dayLow'] ?? ($quote['price'] ?? 0),
+                    'marketCap' => $quote['marketCap'] ?? 0
+                ];
+            }
+        }
+    }
+    
+    return $results;
+}
+
+/**
+ * Update financial data using FMP API (optimized for batch requests)
+ */
+function updateFinancialDataWithFMP($category = 'us_stocks') {
+    $symbols = getCategorySymbols($category);
+    
+    if (empty($symbols)) {
+        return false;
+    }
+    
+    // Use FMP API instead of demo data
+    $financialData = fetchFinancialDataFromFMP($symbols, $category);
+    
+    if (!$financialData) {
+        // Fallback to demo data if FMP fails
+        error_log("FMP API failed for category $category, using demo data");
+        $financialData = fetchFinancialData($symbols, $category);
+    }
+    
+    if (!$financialData) {
+        return false;
+    }
+    
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    foreach ($financialData as $instrument) {
+        if (!isset($instrument['symbol'])) continue;
+        
+        $symbol = $instrument['symbol'];
+        $name = $instrument['longName'] ?? $instrument['shortName'] ?? $symbol;
+        
+        // Process the financial data
+        $price = floatval($instrument['regularMarketPrice'] ?? $instrument['price'] ?? 0);
+        $change = floatval($instrument['regularMarketChange'] ?? 0);
+        $change_percent = floatval($instrument['regularMarketChangePercent'] ?? 0);
+        $volume = floatval($instrument['regularMarketVolume'] ?? 0);
+        $high = floatval($instrument['regularMarketDayHigh'] ?? $price);
+        $low = floatval($instrument['regularMarketDayLow'] ?? $price);
+        $market_cap = floatval($instrument['marketCap'] ?? 0);
+        $logo_url = getLogoUrl($symbol, $category);
+        
+        $query = "INSERT INTO markets (symbol, name, price, change_24h, volume_24h, high_24h, low_24h, market_cap, category, logo_url) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                  ON DUPLICATE KEY UPDATE 
+                  price = VALUES(price), 
+                  change_24h = VALUES(change_24h), 
+                  volume_24h = VALUES(volume_24h), 
+                  high_24h = VALUES(high_24h), 
+                  low_24h = VALUES(low_24h), 
+                  market_cap = VALUES(market_cap),
+                  logo_url = VALUES(logo_url),
+                  updated_at = CURRENT_TIMESTAMP";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$symbol, $name, $price, $change_percent, $volume, $high, $low, $market_cap, $category, $logo_url]);
+    }
+    
+    return true;
+}
 ?>

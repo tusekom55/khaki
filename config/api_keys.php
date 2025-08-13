@@ -6,6 +6,11 @@ define('TWELVE_DATA_API_URL', 'https://api.twelvedata.com');
 define('ALPHA_VANTAGE_API_KEY', 'demo'); // Backup API - Replace with real API key  
 define('ALPHA_VANTAGE_API_URL', 'https://www.alphavantage.co/query');
 
+// FinancialModelingPrep API Keys
+define('FMP_API_KEY', 'Pt5IwxHnQLEUskikphYk55M186mqPCWL'); // Live FMP API key - 100 requests/day
+define('FMP_API_URL', 'https://financialmodelingprep.com/api/v3');
+define('FMP_REQUESTS_PER_DAY', 100); // Free plan limit
+
 // Payment API configuration (demo)
 define('PAPARA_API_KEY', 'demo_key');
 define('PAPARA_API_URL', 'https://merchant-api.papara.com');
