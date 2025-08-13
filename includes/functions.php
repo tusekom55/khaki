@@ -109,33 +109,91 @@ function getFinancialCategories() {
     ];
 }
 
-// Fetch financial data from Yahoo Finance API
+// Fetch financial data with demo data for testing
 function fetchFinancialData($symbols, $category) {
     if (empty($symbols)) return false;
     
-    $symbolString = implode(',', $symbols);
-    $url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols={$symbolString}";
+    $results = [];
     
-    $context = stream_context_create([
-        'http' => [
-            'timeout' => 15,
-            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    // Demo data generator for testing purposes
+    foreach ($symbols as $symbol) {
+        // Generate realistic demo data
+        $basePrice = getBasePriceForSymbol($symbol, $category);
+        $change = (rand(-500, 500) / 100); // -5% to +5%
+        $price = $basePrice + ($basePrice * $change / 100);
+        
+        $results[] = [
+            'symbol' => $symbol,
+            'longName' => getCompanyName($symbol, $category),
+            'shortName' => getCompanyName($symbol, $category),
+            'regularMarketPrice' => round($price, 4),
+            'regularMarketChange' => round($price - $basePrice, 4),
+            'regularMarketChangePercent' => round($change, 2),
+            'regularMarketVolume' => rand(100000, 10000000),
+            'regularMarketDayHigh' => round($price * 1.02, 4),
+            'regularMarketDayLow' => round($price * 0.98, 4),
+            'marketCap' => rand(1000000000, 500000000000)
+        ];
+    }
+    
+    return $results;
+}
+
+// Get base price for symbol based on category
+function getBasePriceForSymbol($symbol, $category) {
+    $prices = [
+        'us_stocks' => [
+            'AAPL' => 175.00, 'MSFT' => 338.00, 'GOOGL' => 138.00, 'AMZN' => 145.00, 'TSLA' => 248.00,
+            'META' => 298.00, 'NVDA' => 435.00, 'JPM' => 148.00, 'JNJ' => 158.00, 'V' => 250.00,
+            'WMT' => 158.00, 'PG' => 152.00, 'UNH' => 515.00, 'DIS' => 96.00, 'HD' => 315.00,
+            'PYPL' => 62.00, 'BAC' => 29.00, 'ADBE' => 485.00, 'CRM' => 218.00, 'NFLX' => 385.00
+        ],
+        'forex_major' => [
+            'EURUSD=X' => 1.0925, 'GBPUSD=X' => 1.2785, 'USDJPY=X' => 148.25, 'USDCHF=X' => 0.8695,
+            'AUDUSD=X' => 0.6685, 'USDCAD=X' => 1.3485, 'NZDUSD=X' => 0.6125, 'EURJPY=X' => 162.15
+        ],
+        'forex_exotic' => [
+            'USDTRY=X' => 27.45, 'EURTRY=X' => 29.95, 'GBPTRY=X' => 35.15, 'USDSEK=X' => 10.85,
+            'USDNOK=X' => 10.65, 'USDPLN=X' => 4.15, 'EURSEK=X' => 11.85, 'USDZAR=X' => 18.25,
+            'USDMXN=X' => 17.85, 'USDHUF=X' => 365.25
+        ],
+        'commodities' => [
+            'GC=F' => 1985.50, 'SI=F' => 23.85, 'CL=F' => 78.25, 'BZ=F' => 82.15, 'NG=F' => 2.85,
+            'HG=F' => 3.82, 'ZW=F' => 585.25, 'ZC=F' => 485.75, 'SB=F' => 22.85, 'KC=F' => 165.25
+        ],
+        'indices' => [
+            '^DJI' => 34875.25, '^GSPC' => 4485.85, '^IXIC' => 13985.75, '^RUT' => 1885.65, '^VIX' => 18.25,
+            '^GDAXI' => 15875.85, '^FTSE' => 7485.25, '^FCHI' => 7285.95, '^N225' => 32885.75, '^HSI' => 18275.85
         ]
-    ]);
+    ];
     
-    $response = @file_get_contents($url, false, $context);
+    return $prices[$category][$symbol] ?? 100.00;
+}
+
+// Get company/instrument name
+function getCompanyName($symbol, $category) {
+    $names = [
+        'us_stocks' => [
+            'AAPL' => 'Apple Inc.', 'MSFT' => 'Microsoft Corporation', 'GOOGL' => 'Alphabet Inc.',
+            'AMZN' => 'Amazon.com Inc.', 'TSLA' => 'Tesla Inc.', 'META' => 'Meta Platforms Inc.',
+            'NVDA' => 'NVIDIA Corporation', 'JPM' => 'JPMorgan Chase & Co.', 'JNJ' => 'Johnson & Johnson',
+            'V' => 'Visa Inc.', 'WMT' => 'Walmart Inc.', 'PG' => 'Procter & Gamble Co.',
+            'UNH' => 'UnitedHealth Group Inc.', 'DIS' => 'Walt Disney Co.', 'HD' => 'Home Depot Inc.',
+            'PYPL' => 'PayPal Holdings Inc.', 'BAC' => 'Bank of America Corp.', 'ADBE' => 'Adobe Inc.',
+            'CRM' => 'Salesforce Inc.', 'NFLX' => 'Netflix Inc.'
+        ],
+        'forex_major' => [
+            'EURUSD=X' => 'EUR/USD', 'GBPUSD=X' => 'GBP/USD', 'USDJPY=X' => 'USD/JPY', 'USDCHF=X' => 'USD/CHF',
+            'AUDUSD=X' => 'AUD/USD', 'USDCAD=X' => 'USD/CAD', 'NZDUSD=X' => 'NZD/USD', 'EURJPY=X' => 'EUR/JPY'
+        ],
+        'commodities' => [
+            'GC=F' => 'Gold Futures', 'SI=F' => 'Silver Futures', 'CL=F' => 'Crude Oil WTI',
+            'BZ=F' => 'Brent Crude Oil', 'NG=F' => 'Natural Gas', 'HG=F' => 'Copper Futures',
+            'ZW=F' => 'Wheat Futures', 'ZC=F' => 'Corn Futures', 'SB=F' => 'Sugar Futures', 'KC=F' => 'Coffee Futures'
+        ]
+    ];
     
-    if ($response === false) {
-        return false;
-    }
-    
-    $data = json_decode($response, true);
-    
-    if (!isset($data['quoteResponse']['result'])) {
-        return false;
-    }
-    
-    return $data['quoteResponse']['result'];
+    return $names[$category][$symbol] ?? $symbol;
 }
 
 // Get predefined symbols for each category (Yahoo Finance format)
