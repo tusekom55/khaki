@@ -510,8 +510,17 @@ function calculateTrade() {
     const amount = parseFloat(document.getElementById('amount').value) || 0;
     const leverage = parseInt(document.getElementById('leverage').value) || 1;
     const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
+    const amountType = document.querySelector('input[name="amountType"]:checked').value;
     
-    const total = amount * price;
+    let total;
+    if (amountType === 'usd') {
+        // USD ile işlem
+        total = amount;
+    } else {
+        // Lot ile işlem
+        total = amount * price;
+    }
+    
     const margin = total / leverage;
     const fee = total * 0.001; // 0.1% fee
     
@@ -522,6 +531,58 @@ function calculateTrade() {
     // Update leverage display
     document.getElementById('leverageDisplay').textContent = leverage + 'x';
 }
+
+function calculateTradeSell() {
+    const amount = parseFloat(document.getElementById('amountSell').value) || 0;
+    const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
+    const amountType = document.querySelector('input[name="amountTypeSell"]:checked').value;
+    
+    let total;
+    if (amountType === 'usd') {
+        // USD ile işlem
+        total = amount;
+    } else {
+        // Lot ile işlem
+        total = amount * price;
+    }
+    
+    const fee = total * 0.001; // 0.1% fee
+    
+    // Update sell form calculations (we'll add IDs to sell form elements)
+}
+
+// Amount type change handlers
+document.addEventListener('DOMContentLoaded', function() {
+    // Buy form amount type handlers
+    document.getElementById('amountLot').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('amountUnit').textContent = 'Lot';
+            calculateTrade();
+        }
+    });
+    
+    document.getElementById('amountUSD').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('amountUnit').textContent = 'USD';
+            calculateTrade();
+        }
+    });
+    
+    // Sell form amount type handlers
+    document.getElementById('amountLotSell').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('amountUnitSell').textContent = 'Lot';
+            calculateTradeSell();
+        }
+    });
+    
+    document.getElementById('amountUSDSell').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('amountUnitSell').textContent = 'USD';
+            calculateTradeSell();
+        }
+    });
+});
 </script>
 
 <!-- Trading Modal -->
@@ -590,11 +651,20 @@ function calculateTrade() {
                                 <div class="tab-pane fade show active" id="buy-pane" role="tabpanel">
                                     <form id="buyForm">
                                         <div class="mb-3">
-                                            <label class="form-label">Miktar</label>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <label class="form-label mb-0">Miktar</label>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="amountType" id="amountLot" value="lot" checked>
+                                                    <label class="btn btn-outline-primary" for="amountLot">Lot</label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="amountType" id="amountUSD" value="usd">
+                                                    <label class="btn btn-outline-primary" for="amountUSD">USD</label>
+                                                </div>
+                                            </div>
                                             <div class="input-group">
                                                 <input type="number" class="form-control" id="amount" step="0.01" min="0.01" 
                                                        placeholder="0.00" oninput="calculateTrade()">
-                                                <span class="input-group-text">Lot</span>
+                                                <span class="input-group-text" id="amountUnit">Lot</span>
                                             </div>
                                         </div>
                                         
@@ -653,10 +723,20 @@ function calculateTrade() {
                                 <div class="tab-pane fade" id="sell-pane" role="tabpanel">
                                     <form id="sellForm">
                                         <div class="mb-3">
-                                            <label class="form-label">Miktar</label>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <label class="form-label mb-0">Miktar</label>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountLotSell" value="lot" checked>
+                                                    <label class="btn btn-outline-primary" for="amountLotSell">Lot</label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountUSDSell" value="usd">
+                                                    <label class="btn btn-outline-primary" for="amountUSDSell">USD</label>
+                                                </div>
+                                            </div>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" step="0.01" min="0.01" placeholder="0.00">
-                                                <span class="input-group-text">Lot</span>
+                                                <input type="number" class="form-control" id="amountSell" step="0.01" min="0.01" 
+                                                       placeholder="0.00" oninput="calculateTradeSell()">
+                                                <span class="input-group-text" id="amountUnitSell">Lot</span>
                                             </div>
                                         </div>
                                         
