@@ -821,4 +821,245 @@ function updateFinancialDataWithFMP($category = 'us_stocks') {
     
     return true;
 }
+
+/**
+ * BATCH API SYSTEM - Ultra optimized for FMP API limits
+ * Updates ALL categories with minimal API requests
+ */
+function updateAllMarketsWithBatchFMP() {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $results = [
+        'total_requests' => 0,
+        'updated_symbols' => 0,
+        'errors' => [],
+        'categories' => []
+    ];
+    
+    try {
+        // 1. Get all FMP symbols from database grouped by category
+        $stock_categories = ['us_stocks', 'eu_stocks', 'world_stocks'];
+        $forex_categories = ['forex_major', 'forex_minor', 'forex_exotic'];
+        $commodity_categories = ['commodities'];
+        $index_categories = ['indices'];
+        
+        // Batch 1: All Stock symbols in one request
+        $stock_symbols = [];
+        $stock_mapping = []; // fmp_symbol => original_data
+        
+        foreach($stock_categories as $category) {
+            $query = "SELECT symbol, fmp_symbol FROM markets WHERE category = ? AND fmp_symbol IS NOT NULL";
+            $stmt = $db->prepare($query);
+            $stmt->execute([$category]);
+            $symbols = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach($symbols as $row) {
+                $stock_symbols[] = $row['fmp_symbol'];
+                $stock_mapping[$row['fmp_symbol']] = [
+                    'original_symbol' => $row['symbol'],
+                    'category' => $category
+                ];
+            }
+        }
+        
+        // Make batch stock request
+        if (!empty($stock_symbols)) {
+            $symbols_string = implode(',', array_slice($stock_symbols, 0, 50)); // FMP limit ~50 symbols
+            $result = makeFMPRequest('/quote/' . $symbols_string);
+            $results['total_requests']++;
+            
+            if ($result['success'] && !empty($result['data'])) {
+                foreach($result['data'] as $quote) {
+                    $fmp_symbol = $quote['symbol'] ?? '';
+                    if (isset($stock_mapping[$fmp_symbol])) {
+                        $original_data = $stock_mapping[$fmp_symbol];
+                        updateMarketRecord($db, $original_data['original_symbol'], $quote, $original_data['category']);
+                        $results['updated_symbols']++;
+                    }
+                }
+                $results['categories'][] = 'stocks (batch)';
+            } else {
+                $results['errors'][] = 'Stock batch failed: ' . ($result['error'] ?? 'Unknown error');
+            }
+        }
+        
+        // Batch 2: Forex symbols (need individual requests due to different endpoint)
+        foreach($forex_categories as $category) {
+            $query = "SELECT symbol, fmp_symbol FROM markets WHERE category = ? AND fmp_symbol IS NOT NULL LIMIT 10";
+            $stmt = $db->prepare($query);
+            $stmt->execute([$category]);
+            $forex_symbols = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach($forex_symbols as $row) {
+                $fmp_symbol = $row['fmp_symbol'];
+                if (strlen($fmp_symbol) >= 6) {
+                    $from = substr($fmp_symbol, 0, 3);
+                    $to = substr($fmp_symbol, 3, 3);
+                    
+                    $result = makeFMPRequest('/fx', ['from' => $from, 'to' => $to]);
+                    $results['total_requests']++;
+                    
+                    if ($result['success'] && !empty($result['data'])) {
+                        $data = is_array($result['data']) ? $result['data'][0] : $result['data'];
+                        
+                        // Convert forex data to standard format
+                        $quote = [
+                            'symbol' => $fmp_symbol,
+                            'price' => $data['rate'] ?? $data['price'] ?? 0,
+                            'change' => 0,
+                            'changesPercentage' => 0,
+                            'volume' => 0,
+                            'dayHigh' => $data['rate'] ?? $data['price'] ?? 0,
+                            'dayLow' => $data['rate'] ?? $data['price'] ?? 0,
+                            'marketCap' => 0,
+                            'name' => getCompanyName($row['symbol'], $category)
+                        ];
+                        
+                        updateMarketRecord($db, $row['symbol'], $quote, $category);
+                        $results['updated_symbols']++;
+                    }
+                    
+                    usleep(100000); // 0.1 second delay for rate limiting
+                }
+            }
+            $results['categories'][] = $category;
+        }
+        
+        // Batch 3: Commodities in one request
+        $query = "SELECT symbol, fmp_symbol FROM markets WHERE category = 'commodities' AND fmp_symbol IS NOT NULL";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $commodity_symbols = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($commodity_symbols)) {
+            $fmp_symbols = array_column($commodity_symbols, 'fmp_symbol');
+            $symbols_string = implode(',', $fmp_symbols);
+            
+            $result = makeFMPRequest('/quote/' . $symbols_string);
+            $results['total_requests']++;
+            
+            if ($result['success'] && !empty($result['data'])) {
+                foreach($result['data'] as $quote) {
+                    $fmp_symbol = $quote['symbol'] ?? '';
+                    foreach($commodity_symbols as $row) {
+                        if ($row['fmp_symbol'] === $fmp_symbol) {
+                            updateMarketRecord($db, $row['symbol'], $quote, 'commodities');
+                            $results['updated_symbols']++;
+                            break;
+                        }
+                    }
+                }
+                $results['categories'][] = 'commodities (batch)';
+            } else {
+                $results['errors'][] = 'Commodities batch failed: ' . ($result['error'] ?? 'Unknown error');
+            }
+        }
+        
+        // Batch 4: Indices in one request
+        $query = "SELECT symbol, fmp_symbol FROM markets WHERE category = 'indices' AND fmp_symbol IS NOT NULL";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $index_symbols = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($index_symbols)) {
+            $fmp_symbols = array_column($index_symbols, 'fmp_symbol');
+            $symbols_string = implode(',', $fmp_symbols);
+            
+            $result = makeFMPRequest('/quote/' . $symbols_string);
+            $results['total_requests']++;
+            
+            if ($result['success'] && !empty($result['data'])) {
+                foreach($result['data'] as $quote) {
+                    $fmp_symbol = $quote['symbol'] ?? '';
+                    foreach($index_symbols as $row) {
+                        if ($row['fmp_symbol'] === $fmp_symbol) {
+                            updateMarketRecord($db, $row['symbol'], $quote, 'indices');
+                            $results['updated_symbols']++;
+                            break;
+                        }
+                    }
+                }
+                $results['categories'][] = 'indices (batch)';
+            } else {
+                $results['errors'][] = 'Indices batch failed: ' . ($result['error'] ?? 'Unknown error');
+            }
+        }
+        
+    } catch (Exception $e) {
+        $results['errors'][] = 'Critical error: ' . $e->getMessage();
+        error_log("Batch FMP update error: " . $e->getMessage());
+    }
+    
+    return $results;
+}
+
+/**
+ * Helper function to update market record in database
+ */
+function updateMarketRecord($db, $original_symbol, $quote, $category) {
+    $name = $quote['name'] ?? getCompanyName($original_symbol, $category);
+    $price = floatval($quote['price'] ?? 0);
+    $change = floatval($quote['change'] ?? 0);
+    $change_percent = floatval($quote['changesPercentage'] ?? 0);
+    $volume = floatval($quote['volume'] ?? 0);
+    $high = floatval($quote['dayHigh'] ?? $price);
+    $low = floatval($quote['dayLow'] ?? $price);
+    $market_cap = floatval($quote['marketCap'] ?? 0);
+    $logo_url = getLogoUrl($original_symbol, $category);
+    
+    $query = "UPDATE markets SET 
+              name = ?, price = ?, change_24h = ?, volume_24h = ?, 
+              high_24h = ?, low_24h = ?, market_cap = ?, logo_url = ?, 
+              updated_at = CURRENT_TIMESTAMP 
+              WHERE symbol = ?";
+    
+    $stmt = $db->prepare($query);
+    return $stmt->execute([$name, $price, $change_percent, $volume, $high, $low, $market_cap, $logo_url, $original_symbol]);
+}
+
+/**
+ * Get FMP symbol for a given original symbol (uses database)
+ */
+function getFMPSymbolFromDB($original_symbol) {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $query = "SELECT fmp_symbol FROM markets WHERE symbol = ? LIMIT 1";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$original_symbol]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return $result ? $result['fmp_symbol'] : null;
+}
+
+/**
+ * Update FMP symbols for all existing records
+ */
+function populateFMPSymbols() {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $updated = 0;
+    
+    // Get all records without fmp_symbol
+    $query = "SELECT symbol, category FROM markets WHERE fmp_symbol IS NULL OR fmp_symbol = ''";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $markets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach($markets as $market) {
+        $fmp_symbol = convertSymbolToFMP($market['symbol'], $market['category']);
+        
+        if ($fmp_symbol && $fmp_symbol !== $market['symbol']) {
+            $updateQuery = "UPDATE markets SET fmp_symbol = ? WHERE symbol = ?";
+            $updateStmt = $db->prepare($updateQuery);
+            if ($updateStmt->execute([$fmp_symbol, $market['symbol']])) {
+                $updated++;
+            }
+        }
+    }
+    
+    return $updated;
+}
 ?>
