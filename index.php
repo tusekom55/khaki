@@ -89,13 +89,14 @@ include 'includes/header.php';
                             <th class="border-0 text-end"><?php echo t('change'); ?></th>
                             <th class="border-0 text-end"><?php echo t('low_24h'); ?></th>
                             <th class="border-0 text-end"><?php echo t('high_24h'); ?></th>
-                            <th class="border-0 text-end pe-4"><?php echo t('volume_24h'); ?></th>
+                            <th class="border-0 text-end"><?php echo t('volume_24h'); ?></th>
+                            <th class="border-0 text-center pe-4">İşlem</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($markets)): ?>
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">
                                     <?php echo getCurrentLang() == 'tr' ? 'Henüz piyasa verisi yok' : 'No market data available'; ?>
@@ -104,8 +105,7 @@ include 'includes/header.php';
                         </tr>
                         <?php else: ?>
                         <?php foreach ($markets as $market): ?>
-                        <tr class="market-row" data-symbol="<?php echo $market['symbol']; ?>" 
-                            style="cursor: pointer;" onclick="window.location.href='trading.php?pair=<?php echo $market['symbol']; ?>'">
+                        <tr class="market-row" data-symbol="<?php echo $market['symbol']; ?>">
                             <td class="ps-4 py-3">
                                 <div class="d-flex align-items-center">
                                     <?php if ($market['logo_url']): ?>
@@ -149,7 +149,7 @@ include 'includes/header.php';
                                     <?php echo $category == 'crypto_tl' ? 'TL' : ($category == 'crypto_usd' ? 'USDT' : 'USD'); ?>
                                 </small>
                             </td>
-                            <td class="text-end py-3 pe-4">
+                            <td class="text-end py-3">
                                 <span class="text-muted"><?php echo formatVolume($market['volume_24h']); ?></span>
                                 <small class="text-muted ms-1">
                                     <?php 
@@ -157,6 +157,26 @@ include 'includes/header.php';
                                     echo $symbol_parts[0];
                                     ?>
                                 </small>
+                            </td>
+                            <td class="text-center py-3 pe-4">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-success btn-sm trade-btn" 
+                                            data-symbol="<?php echo $market['symbol']; ?>" 
+                                            data-name="<?php echo $market['name']; ?>" 
+                                            data-price="<?php echo $market['price']; ?>" 
+                                            data-action="buy"
+                                            onclick="event.stopPropagation(); openTradeModal(this);">
+                                        <i class="fas fa-arrow-up me-1"></i>AL
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm trade-btn" 
+                                            data-symbol="<?php echo $market['symbol']; ?>" 
+                                            data-name="<?php echo $market['name']; ?>" 
+                                            data-price="<?php echo $market['price']; ?>" 
+                                            data-action="sell"
+                                            onclick="event.stopPropagation(); openTradeModal(this);">
+                                        <i class="fas fa-arrow-down me-1"></i>SAT
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -305,6 +325,290 @@ function formatPrice(price) {
         return formatTurkishNumber(price, 8);
     }
 }
+
+// Turkish number formatting function
+function formatTurkishNumber(number, decimals = 2) {
+    return new Intl.NumberFormat('tr-TR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    }).format(number);
+}
+
+// Price change animation
+function animatePriceChange(element, isUp) {
+    element.classList.remove('price-up', 'price-down');
+    element.classList.add(isUp ? 'price-up' : 'price-down');
+    setTimeout(() => {
+        element.classList.remove('price-up', 'price-down');
+    }, 500);
+}
+// Trading modal functions
+function openTradeModal(button) {
+    const symbol = button.dataset.symbol;
+    const name = button.dataset.name;
+    const price = parseFloat(button.dataset.price);
+    const action = button.dataset.action;
+    
+    // Update modal content
+    document.getElementById('modalSymbol').textContent = symbol;
+    document.getElementById('modalName').textContent = name;
+    document.getElementById('modalPrice').textContent = formatPrice(price);
+    document.getElementById('modalChange').textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
+    
+    // Set action (buy/sell)
+    const buyTab = document.getElementById('buy-tab');
+    const sellTab = document.getElementById('sell-tab');
+    const buyPane = document.getElementById('buy-pane');
+    const sellPane = document.getElementById('sell-pane');
+    
+    if (action === 'buy') {
+        buyTab.classList.add('active');
+        sellTab.classList.remove('active');
+        buyPane.classList.add('show', 'active');
+        sellPane.classList.remove('show', 'active');
+    } else {
+        sellTab.classList.add('active');
+        buyTab.classList.remove('active');
+        sellPane.classList.add('show', 'active');
+        buyPane.classList.remove('show', 'active');
+    }
+    
+    // Update TradingView widget
+    updateTradingViewWidget(symbol);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('tradeModal'));
+    modal.show();
+}
+
+function updateTradingViewWidget(symbol) {
+    // Clean symbol for TradingView format
+    let tvSymbol = symbol;
+    
+    // Convert our symbols to TradingView format
+    if (symbol.includes('=X')) {
+        tvSymbol = symbol.replace('=X', '');
+    } else if (symbol.includes('=F')) {
+        tvSymbol = symbol.replace('=F', '');
+    } else if (symbol.startsWith('^')) {
+        tvSymbol = symbol.replace('^', '');
+    }
+    
+    // Update TradingView iframe src
+    const iframe = document.getElementById('tradingview-widget');
+    iframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
+}
+
+function calculateTrade() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const leverage = parseInt(document.getElementById('leverage').value) || 1;
+    const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
+    
+    const total = amount * price;
+    const margin = total / leverage;
+    const fee = total * 0.001; // 0.1% fee
+    
+    document.getElementById('totalValue').textContent = formatPrice(total) + ' USD';
+    document.getElementById('requiredMargin').textContent = formatPrice(margin) + ' USD';
+    document.getElementById('tradingFee').textContent = formatPrice(fee) + ' USD';
+    
+    // Update leverage display
+    document.getElementById('leverageDisplay').textContent = leverage + 'x';
+}
 </script>
+
+<!-- Trading Modal -->
+<div class="modal fade" id="tradeModal" tabindex="-1" aria-labelledby="tradeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px;">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="modalSymbol">AAPL</h5>
+                        <small class="text-muted" id="modalName">Apple Inc.</small>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <div class="h5 mb-0" id="modalPrice">$175.50</div>
+                        <small id="modalChange">+1.25%</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <!-- Chart Section -->
+                    <div class="col-md-8 border-end">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Fiyat Grafiği</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary">1D</button>
+                                    <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                    <button type="button" class="btn btn-outline-secondary">15M</button>
+                                </div>
+                            </div>
+                            <!-- TradingView Widget -->
+                            <div style="height: 400px; border-radius: 8px; overflow: hidden;">
+                                <iframe id="tradingview-widget" 
+                                        src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=AAPL&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                        style="width: 100%; height: 100%; border: none;">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Trading Section -->
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <!-- Buy/Sell Tabs -->
+                            <ul class="nav nav-pills nav-fill mb-3" id="tradingTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="buy-tab" data-bs-toggle="pill" data-bs-target="#buy-pane" type="button">
+                                        <i class="fas fa-arrow-up me-1"></i>LONG
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="sell-tab" data-bs-toggle="pill" data-bs-target="#sell-pane" type="button">
+                                        <i class="fas fa-arrow-down me-1"></i>SHORT
+                                    </button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content" id="tradingTabsContent">
+                                <!-- Buy/Long Form -->
+                                <div class="tab-pane fade show active" id="buy-pane" role="tabpanel">
+                                    <form id="buyForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Miktar</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="amount" step="0.01" min="0.01" 
+                                                       placeholder="0.00" oninput="calculateTrade()">
+                                                <span class="input-group-text">Lot</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Kaldıraç <span id="leverageDisplay" class="badge bg-primary">1x</span></label>
+                                            <input type="range" class="form-range" id="leverage" min="1" max="100" value="1" 
+                                                   oninput="calculateTrade()">
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">1x</small>
+                                                <small class="text-muted">100x</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label class="form-label">Stop Loss</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Take Profit</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Trade Summary -->
+                                        <div class="card border-0 bg-light mb-3">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <small class="text-muted">Toplam Değer:</small>
+                                                    <small class="fw-bold" id="totalValue">$0.00</small>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <small class="text-muted">Gerekli Margin:</small>
+                                                    <small class="fw-bold" id="requiredMargin">$0.00</small>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <small class="text-muted">İşlem Ücreti:</small>
+                                                    <small class="fw-bold" id="tradingFee">$0.00</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Sell/Short Form -->
+                                <div class="tab-pane fade" id="sell-pane" role="tabpanel">
+                                    <form id="sellForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Miktar</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" step="0.01" min="0.01" placeholder="0.00">
+                                                <span class="input-group-text">Lot</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
+                                            <input type="range" class="form-range" min="1" max="100" value="1">
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">1x</small>
+                                                <small class="text-muted">100x</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label class="form-label">Stop Loss</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Take Profit</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Trade Summary -->
+                                        <div class="card border-0 bg-light mb-3">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <small class="text-muted">Toplam Değer:</small>
+                                                    <small class="fw-bold">$0.00</small>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <small class="text-muted">Gerekli Margin:</small>
+                                                    <small class="fw-bold">$0.00</small>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <small class="text-muted">İşlem Ücreti:</small>
+                                                    <small class="fw-bold">$0.00</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-arrow-down me-2"></i>SHORT POZISYON AÇ
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include 'includes/footer.php'; ?>
