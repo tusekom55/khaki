@@ -517,18 +517,15 @@ function calculateTrade() {
         // USD ile işlem - lot miktarını hesapla
         total = amount;
         lotAmount = amount / price;
-        
-        // Lot miktarını göster
-        document.getElementById('lotEquivalent').style.display = 'flex';
-        document.getElementById('lotAmount').textContent = formatPrice(lotAmount) + ' Lot';
     } else {
         // Lot ile işlem
         total = amount * price;
         lotAmount = amount;
-        
-        // Lot miktarını gizle
-        document.getElementById('lotEquivalent').style.display = 'none';
     }
+    
+    // Her durumda lot miktarını göster
+    document.getElementById('lotEquivalent').style.display = 'flex';
+    document.getElementById('lotAmount').textContent = formatPrice(lotAmount) + ' Lot';
     
     const margin = total / leverage;
     const fee = total * 0.001; // 0.1% fee
@@ -663,17 +660,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <label class="form-label mb-0">Miktar</label>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <input type="radio" class="btn-check" name="amountType" id="amountLot" value="lot" checked>
+                                                    <input type="radio" class="btn-check" name="amountType" id="amountLot" value="lot">
                                                     <label class="btn btn-outline-primary" for="amountLot">Lot</label>
                                                     
-                                                    <input type="radio" class="btn-check" name="amountType" id="amountUSD" value="usd">
+                                                    <input type="radio" class="btn-check" name="amountType" id="amountUSD" value="usd" checked>
                                                     <label class="btn btn-outline-primary" for="amountUSD">USD</label>
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <input type="number" class="form-control" id="amount" step="0.01" min="0.01" 
                                                        placeholder="0.00" oninput="calculateTrade()">
-                                                <span class="input-group-text" id="amountUnit">Lot</span>
+                                                <span class="input-group-text" id="amountUnit">USD</span>
                                             </div>
                                         </div>
                                         
@@ -739,10 +736,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <label class="form-label mb-0">Miktar</label>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountLotSell" value="lot" checked>
+                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountLotSell" value="lot">
                                                     <label class="btn btn-outline-primary" for="amountLotSell">Lot</label>
                                                     
-                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountUSDSell" value="usd">
+                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountUSDSell" value="usd" checked>
                                                     <label class="btn btn-outline-primary" for="amountUSDSell">USD</label>
                                                 </div>
                                             </div>
