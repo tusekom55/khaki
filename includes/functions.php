@@ -105,7 +105,35 @@ function getFinancialCategories() {
         'forex_major' => 'Forex Majör Çiftler',
         'forex_minor' => 'Forex Minör Çiftler',
         'forex_exotic' => 'Forex Egzotik Çiftler',
-        'indices' => 'World Indices'
+        'indices' => 'Dünya Endeksleri'
+    ];
+}
+
+// Financial market category icons
+function getCategoryIcons() {
+    return [
+        'us_stocks' => 'fas fa-flag-usa',
+        'eu_stocks' => 'fas fa-landmark',
+        'world_stocks' => 'fas fa-globe-americas',
+        'commodities' => 'fas fa-coins',
+        'forex_major' => 'fas fa-exchange-alt',
+        'forex_minor' => 'fas fa-chart-line',
+        'forex_exotic' => 'fas fa-chart-area',
+        'indices' => 'fas fa-chart-bar'
+    ];
+}
+
+// Financial market category descriptions
+function getCategoryDescriptions() {
+    return [
+        'us_stocks' => 'Apple, Microsoft, Tesla gibi ABD şirketleri',
+        'eu_stocks' => 'SAP, ASML, Shell gibi Avrupa şirketleri',
+        'world_stocks' => 'Toyota, Samsung, Alibaba gibi dünya şirketleri',
+        'commodities' => 'Altın, petrol, doğalgaz ve tarım ürünleri',
+        'forex_major' => 'EUR/USD, GBP/USD gibi ana para çiftleri',
+        'forex_minor' => 'EUR/GBP, AUD/JPY gibi yan para çiftleri',
+        'forex_exotic' => 'USD/TRY, EUR/TRY gibi egzotik çiftler',
+        'indices' => 'S&P 500, NASDAQ, DAX gibi endeksler'
     ];
 }
 

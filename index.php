@@ -61,15 +61,39 @@ include 'includes/header.php';
         </div>
     </div>
     
-    <!-- Financial Categories Tabs -->
+    <!-- Financial Categories Grid -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="nav nav-pills nav-justified bg-light rounded p-2">
-                <?php foreach (getFinancialCategories() as $cat_key => $cat_name): ?>
-                <div class="nav-item">
-                    <a class="nav-link <?php echo $category == $cat_key ? 'active' : ''; ?>" 
-                       href="?group=<?php echo $cat_key; ?>">
-                        <small><?php echo $cat_name; ?></small>
+            <h5 class="mb-3 text-secondary">
+                <i class="fas fa-layer-group me-2"></i>Piyasa Kategorileri
+            </h5>
+            <div class="row g-3">
+                <?php 
+                $categories = getFinancialCategories();
+                $icons = getCategoryIcons();
+                $descriptions = getCategoryDescriptions();
+                foreach ($categories as $cat_key => $cat_name): 
+                ?>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <a href="?group=<?php echo $cat_key; ?>" class="text-decoration-none">
+                        <div class="category-card card h-100 border-0 shadow-sm <?php echo $category == $cat_key ? 'category-active' : ''; ?>">
+                            <div class="card-body p-3 text-center">
+                                <div class="category-icon mb-2">
+                                    <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?> fa-2x"></i>
+                                </div>
+                                <h6 class="card-title mb-2 fw-bold"><?php echo $cat_name; ?></h6>
+                                <p class="card-text text-muted small mb-0">
+                                    <?php echo $descriptions[$cat_key] ?? ''; ?>
+                                </p>
+                                <?php if ($category == $cat_key): ?>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-check me-1"></i>Aktif
+                                    </span>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </a>
                 </div>
                 <?php endforeach; ?>
