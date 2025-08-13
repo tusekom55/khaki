@@ -182,18 +182,155 @@ function getCompanyName($symbol, $category) {
             'PYPL' => 'PayPal Holdings Inc.', 'BAC' => 'Bank of America Corp.', 'ADBE' => 'Adobe Inc.',
             'CRM' => 'Salesforce Inc.', 'NFLX' => 'Netflix Inc.'
         ],
+        'eu_stocks' => [
+            'SAP.DE' => 'SAP SE', 'ASML.AS' => 'ASML Holding NV', 'MC.PA' => 'LVMH', 'NESN.SW' => 'Nestlé S.A.',
+            'ROG.SW' => 'Roche Holding AG', 'AZN.L' => 'AstraZeneca PLC', 'SHEL.L' => 'Shell plc',
+            'RDSA.AS' => 'Royal Dutch Shell', 'SIE.DE' => 'Siemens AG', 'OR.PA' => "L'Oréal S.A."
+        ],
+        'world_stocks' => [
+            'TSM' => 'Taiwan Semiconductor', 'BABA' => 'Alibaba Group', 'TCEHY' => 'Tencent Holdings',
+            '7203.T' => 'Toyota Motor Corp', 'SNY' => 'Sanofi SA', 'TM' => 'Toyota Motor Corp',
+            'SONY' => 'Sony Group Corp', 'ING' => 'ING Groep NV', 'UL' => 'Unilever PLC', 'RIO.L' => 'Rio Tinto PLC'
+        ],
         'forex_major' => [
             'EURUSD=X' => 'EUR/USD', 'GBPUSD=X' => 'GBP/USD', 'USDJPY=X' => 'USD/JPY', 'USDCHF=X' => 'USD/CHF',
             'AUDUSD=X' => 'AUD/USD', 'USDCAD=X' => 'USD/CAD', 'NZDUSD=X' => 'NZD/USD', 'EURJPY=X' => 'EUR/JPY'
+        ],
+        'forex_minor' => [
+            'EURGBP=X' => 'EUR/GBP', 'GBPJPY=X' => 'GBP/JPY', 'EURCHF=X' => 'EUR/CHF', 'AUDJPY=X' => 'AUD/JPY',
+            'GBPCHF=X' => 'GBP/CHF', 'EURAUD=X' => 'EUR/AUD', 'CADJPY=X' => 'CAD/JPY', 'AUDCAD=X' => 'AUD/CAD',
+            'NZDJPY=X' => 'NZD/JPY', 'CHFJPY=X' => 'CHF/JPY'
+        ],
+        'forex_exotic' => [
+            'USDTRY=X' => 'USD/TRY', 'EURTRY=X' => 'EUR/TRY', 'GBPTRY=X' => 'GBP/TRY', 'USDSEK=X' => 'USD/SEK',
+            'USDNOK=X' => 'USD/NOK', 'USDPLN=X' => 'USD/PLN', 'EURSEK=X' => 'EUR/SEK', 'USDZAR=X' => 'USD/ZAR',
+            'USDMXN=X' => 'USD/MXN', 'USDHUF=X' => 'USD/HUF'
         ],
         'commodities' => [
             'GC=F' => 'Gold Futures', 'SI=F' => 'Silver Futures', 'CL=F' => 'Crude Oil WTI',
             'BZ=F' => 'Brent Crude Oil', 'NG=F' => 'Natural Gas', 'HG=F' => 'Copper Futures',
             'ZW=F' => 'Wheat Futures', 'ZC=F' => 'Corn Futures', 'SB=F' => 'Sugar Futures', 'KC=F' => 'Coffee Futures'
+        ],
+        'indices' => [
+            '^DJI' => 'Dow Jones Industrial Average', '^GSPC' => 'S&P 500', '^IXIC' => 'NASDAQ Composite',
+            '^RUT' => 'Russell 2000', '^VIX' => 'CBOE Volatility Index', '^GDAXI' => 'DAX Performance Index',
+            '^FTSE' => 'FTSE 100', '^FCHI' => 'CAC 40', '^N225' => 'Nikkei 225', '^HSI' => 'Hang Seng Index'
         ]
     ];
     
     return $names[$category][$symbol] ?? $symbol;
+}
+
+// Get logo URL for instrument
+function getLogoUrl($symbol, $category) {
+    $logos = [
+        'us_stocks' => [
+            'AAPL' => 'https://logo.clearbit.com/apple.com',
+            'MSFT' => 'https://logo.clearbit.com/microsoft.com',
+            'GOOGL' => 'https://logo.clearbit.com/google.com',
+            'AMZN' => 'https://logo.clearbit.com/amazon.com',
+            'TSLA' => 'https://logo.clearbit.com/tesla.com',
+            'META' => 'https://logo.clearbit.com/meta.com',
+            'NVDA' => 'https://logo.clearbit.com/nvidia.com',
+            'JPM' => 'https://logo.clearbit.com/jpmorganchase.com',
+            'JNJ' => 'https://logo.clearbit.com/jnj.com',
+            'V' => 'https://logo.clearbit.com/visa.com',
+            'WMT' => 'https://logo.clearbit.com/walmart.com',
+            'PG' => 'https://logo.clearbit.com/pg.com',
+            'UNH' => 'https://logo.clearbit.com/unitedhealthgroup.com',
+            'DIS' => 'https://logo.clearbit.com/disney.com',
+            'HD' => 'https://logo.clearbit.com/homedepot.com',
+            'PYPL' => 'https://logo.clearbit.com/paypal.com',
+            'BAC' => 'https://logo.clearbit.com/bankofamerica.com',
+            'ADBE' => 'https://logo.clearbit.com/adobe.com',
+            'CRM' => 'https://logo.clearbit.com/salesforce.com',
+            'NFLX' => 'https://logo.clearbit.com/netflix.com'
+        ],
+        'eu_stocks' => [
+            'SAP.DE' => 'https://logo.clearbit.com/sap.com',
+            'ASML.AS' => 'https://logo.clearbit.com/asml.com',
+            'MC.PA' => 'https://logo.clearbit.com/lvmh.com',
+            'NESN.SW' => 'https://logo.clearbit.com/nestle.com',
+            'ROG.SW' => 'https://logo.clearbit.com/roche.com',
+            'AZN.L' => 'https://logo.clearbit.com/astrazeneca.com',
+            'SHEL.L' => 'https://logo.clearbit.com/shell.com',
+            'RDSA.AS' => 'https://logo.clearbit.com/shell.com',
+            'SIE.DE' => 'https://logo.clearbit.com/siemens.com',
+            'OR.PA' => 'https://logo.clearbit.com/loreal.com'
+        ],
+        'world_stocks' => [
+            'TSM' => 'https://logo.clearbit.com/tsmc.com',
+            'BABA' => 'https://logo.clearbit.com/alibaba.com',
+            'TCEHY' => 'https://logo.clearbit.com/tencent.com',
+            '7203.T' => 'https://logo.clearbit.com/toyota.com',
+            'SNY' => 'https://logo.clearbit.com/sanofi.com',
+            'TM' => 'https://logo.clearbit.com/toyota.com',
+            'SONY' => 'https://logo.clearbit.com/sony.com',
+            'ING' => 'https://logo.clearbit.com/ing.com',
+            'UL' => 'https://logo.clearbit.com/unilever.com',
+            'RIO.L' => 'https://logo.clearbit.com/riotinto.com'
+        ],
+        'forex_major' => [
+            'EURUSD=X' => 'https://flagcdn.com/w40/eu.png',
+            'GBPUSD=X' => 'https://flagcdn.com/w40/gb.png',
+            'USDJPY=X' => 'https://flagcdn.com/w40/jp.png',
+            'USDCHF=X' => 'https://flagcdn.com/w40/ch.png',
+            'AUDUSD=X' => 'https://flagcdn.com/w40/au.png',
+            'USDCAD=X' => 'https://flagcdn.com/w40/ca.png',
+            'NZDUSD=X' => 'https://flagcdn.com/w40/nz.png',
+            'EURJPY=X' => 'https://flagcdn.com/w40/eu.png'
+        ],
+        'forex_minor' => [
+            'EURGBP=X' => 'https://flagcdn.com/w40/eu.png',
+            'GBPJPY=X' => 'https://flagcdn.com/w40/gb.png',
+            'EURCHF=X' => 'https://flagcdn.com/w40/eu.png',
+            'AUDJPY=X' => 'https://flagcdn.com/w40/au.png',
+            'GBPCHF=X' => 'https://flagcdn.com/w40/gb.png',
+            'EURAUD=X' => 'https://flagcdn.com/w40/eu.png',
+            'CADJPY=X' => 'https://flagcdn.com/w40/ca.png',
+            'AUDCAD=X' => 'https://flagcdn.com/w40/au.png',
+            'NZDJPY=X' => 'https://flagcdn.com/w40/nz.png',
+            'CHFJPY=X' => 'https://flagcdn.com/w40/ch.png'
+        ],
+        'forex_exotic' => [
+            'USDTRY=X' => 'https://flagcdn.com/w40/tr.png',
+            'EURTRY=X' => 'https://flagcdn.com/w40/tr.png',
+            'GBPTRY=X' => 'https://flagcdn.com/w40/tr.png',
+            'USDSEK=X' => 'https://flagcdn.com/w40/se.png',
+            'USDNOK=X' => 'https://flagcdn.com/w40/no.png',
+            'USDPLN=X' => 'https://flagcdn.com/w40/pl.png',
+            'EURSEK=X' => 'https://flagcdn.com/w40/se.png',
+            'USDZAR=X' => 'https://flagcdn.com/w40/za.png',
+            'USDMXN=X' => 'https://flagcdn.com/w40/mx.png',
+            'USDHUF=X' => 'https://flagcdn.com/w40/hu.png'
+        ],
+        'commodities' => [
+            'GC=F' => 'https://cdn.jsdelivr.net/gh/dmhendricks/file-icon-vectors@master/dist/icons/vivid/gold.svg',
+            'SI=F' => 'https://cdn.jsdelivr.net/gh/dmhendricks/file-icon-vectors@master/dist/icons/vivid/silver.svg',
+            'CL=F' => 'https://img.icons8.com/color/48/oil-pump.png',
+            'BZ=F' => 'https://img.icons8.com/color/48/oil-pump.png',
+            'NG=F' => 'https://img.icons8.com/color/48/gas.png',
+            'HG=F' => 'https://img.icons8.com/color/48/copper.png',
+            'ZW=F' => 'https://img.icons8.com/color/48/wheat.png',
+            'ZC=F' => 'https://img.icons8.com/color/48/corn.png',
+            'SB=F' => 'https://img.icons8.com/color/48/sugar-cubes.png',
+            'KC=F' => 'https://img.icons8.com/color/48/coffee-beans.png'
+        ],
+        'indices' => [
+            '^DJI' => 'https://img.icons8.com/color/48/stocks-growth.png',
+            '^GSPC' => 'https://img.icons8.com/color/48/combo-chart.png',
+            '^IXIC' => 'https://img.icons8.com/color/48/nasdaq.png',
+            '^RUT' => 'https://img.icons8.com/color/48/line-chart.png',
+            '^VIX' => 'https://img.icons8.com/color/48/volatility.png',
+            '^GDAXI' => 'https://flagcdn.com/w40/de.png',
+            '^FTSE' => 'https://flagcdn.com/w40/gb.png',
+            '^FCHI' => 'https://flagcdn.com/w40/fr.png',
+            '^N225' => 'https://flagcdn.com/w40/jp.png',
+            '^HSI' => 'https://flagcdn.com/w40/hk.png'
+        ]
+    ];
+    
+    return $logos[$category][$symbol] ?? '';
 }
 
 // Get predefined symbols for each category (Yahoo Finance format)
@@ -243,9 +380,10 @@ function updateFinancialData($category = 'us_stocks') {
         $high = floatval($instrument['regularMarketDayHigh'] ?? $price);
         $low = floatval($instrument['regularMarketDayLow'] ?? $price);
         $market_cap = floatval($instrument['marketCap'] ?? 0);
+        $logo_url = getLogoUrl($symbol, $category);
         
         $query = "INSERT INTO markets (symbol, name, price, change_24h, volume_24h, high_24h, low_24h, market_cap, category, logo_url) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '') 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
                   ON DUPLICATE KEY UPDATE 
                   price = VALUES(price), 
                   change_24h = VALUES(change_24h), 
@@ -253,10 +391,11 @@ function updateFinancialData($category = 'us_stocks') {
                   high_24h = VALUES(high_24h), 
                   low_24h = VALUES(low_24h), 
                   market_cap = VALUES(market_cap),
+                  logo_url = VALUES(logo_url),
                   updated_at = CURRENT_TIMESTAMP";
         
         $stmt = $db->prepare($query);
-        $stmt->execute([$symbol, $name, $price, $change_percent, $volume, $high, $low, $market_cap, $category]);
+        $stmt->execute([$symbol, $name, $price, $change_percent, $volume, $high, $low, $market_cap, $category, $logo_url]);
     }
     
     return true;

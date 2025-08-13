@@ -421,6 +421,38 @@ iframe[id="tradingview-widget"] {
     box-shadow: 0 1px 3px rgba(0, 123, 255, 0.3);
 }
 
+/* Logo Styles */
+.market-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.market-logo:hover {
+    transform: scale(1.1);
+    border-color: var(--bs-primary);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.logo-fallback {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.logo-fallback:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
 /* Print Styles */
 @media print {
     .navbar,

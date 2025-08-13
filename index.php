@@ -113,7 +113,11 @@ include 'includes/header.php';
                                          alt="<?php echo $market['name']; ?>" 
                                          class="me-3 rounded-circle" 
                                          width="32" height="32"
-                                         onerror="this.src='assets/images/default-coin.png'">
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 32px; height: 32px; display: none;">
+                                        <i class="fas fa-coins text-white"></i>
+                                    </div>
                                     <?php else: ?>
                                     <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
                                          style="width: 32px; height: 32px;">
