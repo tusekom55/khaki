@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endif; ?>
                                     
                                     <?php if (isLoggedIn()): ?>
-                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>" onsubmit="console.log('BUY FORM SUBMIT!'); return true;">
                                         <input type="hidden" name="modal_action" value="buy">
                                         <input type="hidden" name="symbol" id="buySymbol" value="">
                                         <input type="hidden" name="trade_type" id="buyTradeType" value="">
