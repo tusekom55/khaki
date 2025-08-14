@@ -32,40 +32,13 @@ if (isLoggedIn()) {
     ];
 }
 
-// Debug POST data always (even if conditions not met)
-if ($_POST) {
-    echo "<div style='position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 99999; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;'>";
-    echo "🔴 POST DATA RECEIVED:\n" . print_r($_POST, true);
-    echo "\n👤 USER LOGGED IN: " . (isLoggedIn() ? 'YES (ID: ' . $_SESSION['user_id'] . ')' : 'NO');
-    echo "\n💰 TL BALANCE: " . (isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 'N/A');
-    echo "\n🔗 REQUEST URI: " . $_SERVER['REQUEST_URI'];
-    echo "</div>";
-    
-    // 10 saniye sonra otomatik gizle
-    echo "<script>setTimeout(function(){ document.querySelector('div[style*=\"background: red\"]').style.display = 'none'; }, 10000);</script>";
-    
-    error_log("ALL POST DEBUG: " . print_r($_POST, true));
-}
-
 // Handle modal trading form submission
 if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
-    echo "<div style='position: fixed; top: 220px; left: 0; right: 0; background: green; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-    echo "✅ TRADE FORM PROCESSING...";
-    echo "</div>";
-    
-    // 5 saniye sonra otomatik gizle
-    echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: green\"]'); if(el) el.style.display = 'none'; }, 5000);</script>";
-    
-    // Debug POST data
-    error_log("FORM POST DEBUG: " . print_r($_POST, true));
-    
     $modal_action = $_POST['modal_action']; // 'buy', 'sell', or 'leverage'
     $symbol = $_POST['symbol'] ?? '';
     $amount = (float)($_POST['amount'] ?? 0);
     $leverage = (int)($_POST['leverage'] ?? 1);
     $is_leverage_trade = ($_POST['trade_type'] ?? '') === 'leverage';
-    
-    error_log("FORM PARSED: action=$modal_action, symbol=$symbol, amount=$amount, leverage=$leverage, is_leverage=$is_leverage_trade");
     
     // Get market data for this symbol
     $current_market = null;
@@ -76,72 +49,25 @@ if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
         }
     }
     
-    echo "<div style='position: fixed; top: 270px; left: 0; right: 0; background: blue; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-    echo "🔍 MARKET SEARCH DEBUG:\n";
-    echo "Symbol to find: " . $symbol . "\n";
-    echo "Available markets: " . count($markets) . "\n";
-    echo "Market found: " . ($current_market ? 'YES' : 'NO') . "\n";
-    if ($current_market) {
-        echo "Market price: " . $current_market['price'] . "\n";
-    } else {
-        echo "First 3 symbols in markets: ";
-        for ($i = 0; $i < min(3, count($markets)); $i++) {
-            echo $markets[$i]['symbol'] . ' ';
-        }
-        echo "\n";
-    }
-    echo "Amount: " . $amount . "\n";
-    echo "</div>";
-    echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: blue\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
-    
     if ($current_market && $amount > 0) {
         $price_usd = (float)$current_market['price'];
         
-        echo "<div style='position: fixed; top: 350px; left: 0; right: 0; background: purple; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-        echo "💰 EXECUTING TRADE:\n";
-        echo "User ID: " . $_SESSION['user_id'] . "\n";
-        echo "Symbol: " . $symbol . "\n";
-        echo "Action: " . $modal_action . "\n";
-        echo "Amount: " . $amount . "\n";
-        echo "Price USD: " . $price_usd . "\n";
-        echo "Leverage: " . $leverage . "\n";
-        echo "</div>";
-        echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: purple\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
-        
         // Execute trade using parametric system
         if (executeTradeParametric($_SESSION['user_id'], $symbol, $modal_action, $amount, $price_usd, $leverage, $is_leverage_trade)) {
-            $success = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
-            
-            echo "<div style='position: fixed; top: 430px; left: 0; right: 0; background: darkgreen; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-            echo "✅ TRADE SUCCESS!\n";
-            echo "Balance will be refreshed...\n";
-            echo "</div>";
-            echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: darkgreen\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
-            
-            // Refresh user balances
-            $user_balances = [
-                'primary' => getUserBalance($_SESSION['user_id'], $currency_field),
-                'tl' => getUserBalance($_SESSION['user_id'], 'tl'),
-                'usd' => getUserBalance($_SESSION['user_id'], 'usd'),
-                'btc' => getUserBalance($_SESSION['user_id'], 'btc'),
-                'eth' => getUserBalance($_SESSION['user_id'], 'eth')
-            ];
+            // Redirect to prevent form resubmission (PRG pattern)
+            $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
+            header('Location: markets.php?group=' . $category);
+            exit();
         } else {
-            $error = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
-            
-            echo "<div style='position: fixed; top: 430px; left: 0; right: 0; background: darkred; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-            echo "❌ TRADE FAILED!\n";
-            echo "Error: " . $error . "\n";
-            echo "</div>";
-            echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: darkred\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
+            // Redirect with error message
+            $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
+            header('Location: markets.php?group=' . $category);
+            exit();
         }
     } else {
-        echo "<div style='position: fixed; top: 350px; left: 0; right: 0; background: orange; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
-        echo "⚠️ TRADE BLOCKED!\n";
-        echo "Market found: " . ($current_market ? 'YES' : 'NO') . "\n";
-        echo "Amount > 0: " . ($amount > 0 ? 'YES' : 'NO') . "\n";
-        echo "</div>";
-        echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: orange\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
+        $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'Geçersiz işlem parametreleri.' : 'Invalid trade parameters.';
+        header('Location: markets.php?group=' . $category);
+        exit();
     }
 }
 
@@ -173,9 +99,37 @@ if ($search) {
 }
 
 include 'includes/header.php';
+
+// Check for session messages
+$success_message = '';
+$error_message = '';
+
+if (isset($_SESSION['trade_success'])) {
+    $success_message = $_SESSION['trade_success'];
+    unset($_SESSION['trade_success']);
+}
+
+if (isset($_SESSION['trade_error'])) {
+    $error_message = $_SESSION['trade_error'];
+    unset($_SESSION['trade_error']);
+}
 ?>
 
 <div class="container">
+    
+    <?php if ($success_message): ?>
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i><?php echo $success_message; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
+    
+    <?php if ($error_message): ?>
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i><?php echo $error_message; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <?php endif; ?>
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col-md-8">

@@ -1266,10 +1266,20 @@ function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd, $
                 // Check TL balance
                 $balance = getUserBalance($user_id, 'tl');
                 error_log("TRADE DEBUG BUY: current_tl_balance=$balance, required=$total_with_fee");
+                error_log("TRADE DEBUG BUY: balance_type=" . gettype($balance) . ", total_type=" . gettype($total_with_fee));
+                error_log("TRADE DEBUG BUY: balance_float=" . (float)$balance . ", total_float=" . (float)$total_with_fee);
+                error_log("TRADE DEBUG BUY: comparison_result=" . ($balance < $total_with_fee ? 'FAIL' : 'PASS'));
                 
-                if ($balance < $total_with_fee) {
-                    throw new Exception("Insufficient TL balance. Have: $balance TL, Need: $total_with_fee TL");
+                // Ensure both values are floats for comparison
+                $balance_float = (float)$balance;
+                $total_with_fee_float = (float)$total_with_fee;
+                
+                if ($balance_float < $total_with_fee_float) {
+                    error_log("TRADE ERROR: Balance check failed. $balance_float < $total_with_fee_float");
+                    throw new Exception("Insufficient TL balance. Have: $balance_float TL, Need: $total_with_fee_float TL");
                 }
+                
+                error_log("TRADE DEBUG: Balance check PASSED! Proceeding with trade...");
                 
                 // Deduct TL, add crypto
                 updateUserBalance($user_id, 'tl', $total_with_fee, 'subtract');
