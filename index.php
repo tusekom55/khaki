@@ -209,7 +209,7 @@ $markets = getMarketData('us_stocks', 6);
             <h2><?php echo getCurrentLang() == 'tr' ? 'Amerika\'nın en büyük şirketlerine yatırım yapın' : 'Invest in America\'s largest companies'; ?></h2>
         </div>
         <div class="ticker-container">
-            <div class="ticker-track">
+            <div class="ticker-track" style="display: flex; animation: ticker 30s linear infinite; gap: 2rem; width: max-content;">
                 <!-- First set of US Stocks -->
                 <div class="coin-item">
                     <div class="coin-flag">🍎</div>
@@ -293,7 +293,7 @@ $markets = getMarketData('us_stocks', 6);
                 
                 <!-- Duplicate set for seamless loop -->
                 <div class="coin-item">
-                    <div class="coin-flag logo-aapl"></div>
+                    <div class="coin-flag">🍎</div>
                     <div class="coin-info">
                         <div class="coin-symbol">AAPL</div>
                         <div class="coin-name">Apple Inc.</div>
@@ -301,7 +301,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-msft"></div>
+                    <div class="coin-flag">🪟</div>
                     <div class="coin-info">
                         <div class="coin-symbol">MSFT</div>
                         <div class="coin-name">Microsoft</div>
@@ -309,7 +309,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-googl"></div>
+                    <div class="coin-flag">🔍</div>
                     <div class="coin-info">
                         <div class="coin-symbol">GOOGL</div>
                         <div class="coin-name">Alphabet Inc.</div>
@@ -317,7 +317,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-amzn"></div>
+                    <div class="coin-flag">📦</div>
                     <div class="coin-info">
                         <div class="coin-symbol">AMZN</div>
                         <div class="coin-name">Amazon</div>
@@ -325,7 +325,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-tsla"></div>
+                    <div class="coin-flag">🚗</div>
                     <div class="coin-info">
                         <div class="coin-symbol">TSLA</div>
                         <div class="coin-name">Tesla Inc.</div>
@@ -333,7 +333,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-meta"></div>
+                    <div class="coin-flag">👥</div>
                     <div class="coin-info">
                         <div class="coin-symbol">META</div>
                         <div class="coin-name">Meta Platforms</div>
@@ -341,7 +341,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-nflx"></div>
+                    <div class="coin-flag">🎬</div>
                     <div class="coin-info">
                         <div class="coin-symbol">NFLX</div>
                         <div class="coin-name">Netflix</div>
@@ -349,7 +349,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-v"></div>
+                    <div class="coin-flag">💳</div>
                     <div class="coin-info">
                         <div class="coin-symbol">V</div>
                         <div class="coin-name">Visa Inc.</div>
@@ -357,7 +357,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-ko"></div>
+                    <div class="coin-flag">🥤</div>
                     <div class="coin-info">
                         <div class="coin-symbol">KO</div>
                         <div class="coin-name">Coca-Cola</div>
@@ -365,7 +365,7 @@ $markets = getMarketData('us_stocks', 6);
                 </div>
                 
                 <div class="coin-item">
-                    <div class="coin-flag logo-jpm"></div>
+                    <div class="coin-flag">🏦</div>
                     <div class="coin-info">
                         <div class="coin-symbol">JPM</div>
                         <div class="coin-name">JPMorgan Chase</div>
