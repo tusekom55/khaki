@@ -44,6 +44,12 @@ if (!in_array($current_page, $public_pages)) {
             background-color: var(--primary-bg) !important;
             border-bottom: 1px solid var(--border-color);
             padding: 0.75rem 0;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
         }
         
         .navbar-brand {

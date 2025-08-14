@@ -43,6 +43,7 @@ $markets = getMarketData('us_stocks', 6);
             line-height: 1.6;
             color: #333;
             overflow-x: hidden;
+            padding-top: 76px;
         }
 
         /* ===== NAVIGATION FIXES ===== */
@@ -89,10 +90,9 @@ $markets = getMarketData('us_stocks', 6);
         /* ===== HERO SLIDER ===== */
         .hero-slider {
             position: relative !important;
-            height: 100vh !important;
+            height: calc(100vh - 76px) !important;
             overflow: hidden !important;
             background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%) !important;
-            margin-top: 76px; /* Push down to avoid navbar */
         }
 
         .slider-container {
