@@ -404,23 +404,111 @@ $markets = getMarketData('us_stocks', 6);
         </div>
     </section>
 
-    <!-- Market Indicators -->
-    <section class="market-indicators" id="indicators">
+    <!-- WORKING TICKER AS MARKET INDICATORS -->
+    <section style="background: #0d1b4c; padding: 60px 0; overflow: hidden;">
         <div class="container">
-            <h2 class="section-title"><?php echo getCurrentLang() == 'tr' ? 'Canlı Piyasa Göstergeleri' : 'Live Market Indicators'; ?></h2>
-            <div class="indicators-grid">
-                <?php foreach (array_slice($markets, 0, 6) as $market): ?>
-                <div class="indicator-item">
-                    <span class="pair"><?php echo $market['symbol']; ?></span>
-                    <span class="price"><?php echo formatPrice($market['price']); ?> TL</span>
-                    <span class="change <?php echo $market['change_24h'] >= 0 ? 'positive' : 'negative'; ?>">
-                        <?php echo ($market['change_24h'] >= 0 ? '+' : '') . number_format($market['change_24h'], 2); ?>%
-                    </span>
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="color: #fff; font-size: 2rem; font-weight: 600; margin: 0;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Canlı Piyasa Göstergeleri' : 'Live Market Indicators'; ?>
+                </h2>
+            </div>
+            
+            <div style="overflow: hidden; position: relative; mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent); -webkit-mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);">
+                <div style="display: flex; animation: marketTicker 25s linear infinite; gap: 30px; width: max-content;" onmouseover="this.style.animationPlayState='paused'" onmouseout="this.style.animationPlayState='running'">
+                    
+                    <!-- Apple -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #000, #333); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">🍎</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">AAPL</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Apple Inc.</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$189.25</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+2.15%</div>
+                    </div>
+                    
+                    <!-- Microsoft -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #0078d4, #005a9e); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold;">MS</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">MSFT</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Microsoft</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$412.80</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+1.87%</div>
+                    </div>
+                    
+                    <!-- Google -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold;">G</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">GOOGL</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Alphabet Inc.</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$139.65</div>
+                        <div style="font-size: 0.9rem; color: #ef4444; background: rgba(239, 68, 68, 0.2); padding: 4px 8px; border-radius: 4px;">-0.95%</div>
+                    </div>
+                    
+                    <!-- Amazon -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #ff9900, #ff6600); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem;">📦</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">AMZN</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Amazon</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$145.32</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+3.24%</div>
+                    </div>
+                    
+                    <!-- Tesla -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #cc0000, #990000); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem;">⚡</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">TSLA</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Tesla Inc.</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$248.50</div>
+                        <div style="font-size: 0.9rem; color: #ef4444; background: rgba(239, 68, 68, 0.2); padding: 4px 8px; border-radius: 4px;">-1.45%</div>
+                    </div>
+                    
+                    <!-- Meta -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #1877f2, #0d47a1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold;">f</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">META</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Meta Platforms</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$494.75</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+0.87%</div>
+                    </div>
+                    
+                    <!-- DUPLICATE FOR SEAMLESS LOOP -->
+                    
+                    <!-- Apple Duplicate -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #000, #333); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">🍎</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">AAPL</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Apple Inc.</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$189.25</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+2.15%</div>
+                    </div>
+                    
+                    <!-- Microsoft Duplicate -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #0078d4, #005a9e); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold;">MS</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">MSFT</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Microsoft</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$412.80</div>
+                        <div style="font-size: 0.9rem; color: #22c55e; background: rgba(34, 197, 94, 0.2); padding: 4px 8px; border-radius: 4px;">+1.87%</div>
+                    </div>
+                    
+                    <!-- Google Duplicate -->
+                    <div style="flex-shrink: 0; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; min-width: 200px; text-align: center; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-5px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+                        <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; font-weight: bold;">G</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 4px;">GOOGL</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Alphabet Inc.</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700; margin-bottom: 4px;">$139.65</div>
+                        <div style="font-size: 0.9rem; color: #ef4444; background: rgba(239, 68, 68, 0.2); padding: 4px 8px; border-radius: 4px;">-0.95%</div>
+                    </div>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
     </section>
+    
+    <style>
+        @keyframes marketTicker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
 
     <!-- Promo Cards Section -->
     <section class="promo-cards" id="promo-cards">
