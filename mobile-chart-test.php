@@ -254,41 +254,22 @@
                     <div class="mobile-chart-tabs" style="display: none;">
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="nav-item flex-fill" role="presentation">
-                                <button class="nav-link active w-100" id="chart-tab-mobile" data-bs-toggle="tab" 
-                                        data-bs-target="#chart-pane-mobile" type="button" role="tab">
-                                    <i class="fas fa-chart-line me-1"></i>📈 Grafik
+                                <button class="nav-link active w-100" id="trading-tab-mobile" data-bs-toggle="tab" 
+                                        data-bs-target="#trading-pane-mobile" type="button" role="tab">
+                                    <i class="fas fa-coins me-1"></i>💰 İşlem
                                 </button>
                             </li>
                             <li class="nav-item flex-fill" role="presentation">
-                                <button class="nav-link w-100" id="trading-tab-mobile" data-bs-toggle="tab" 
-                                        data-bs-target="#trading-pane-mobile" type="button" role="tab">
-                                    <i class="fas fa-coins me-1"></i>💰 İşlem
+                                <button class="nav-link w-100" id="chart-tab-mobile" data-bs-toggle="tab" 
+                                        data-bs-target="#chart-pane-mobile" type="button" role="tab">
+                                    <i class="fas fa-chart-line me-1"></i>📈 Grafik
                                 </button>
                             </li>
                         </ul>
                         
                         <div class="tab-content mobile-tab-content">
-                            <!-- Mobile Chart Tab -->
-                            <div class="tab-pane fade show active" id="chart-pane-mobile" role="tabpanel">
-                                <div class="chart-container-mobile">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0">📈 Fiyat Grafiği</h6>
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-secondary">1D</button>
-                                            <button type="button" class="btn btn-outline-secondary active">1H</button>
-                                            <button type="button" class="btn btn-outline-secondary">15M</button>
-                                        </div>
-                                    </div>
-                                    <div class="chart-container">
-                                        <iframe id="tradingview-mobile" 
-                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL">
-                                        </iframe>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Mobile Trading Tab -->
-                            <div class="tab-pane fade" id="trading-pane-mobile" role="tabpanel">
+                            <!-- Mobile Trading Tab - İLK AKTIF -->
+                            <div class="tab-pane fade show active" id="trading-pane-mobile" role="tabpanel">
                                 <div class="trading-container-mobile">
                                     <div class="trading-section">
                                         <h6><i class="fas fa-shopping-cart me-2"></i>İşlem Yap</h6>
@@ -343,6 +324,26 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Mobile Chart Tab -->
+                            <div class="tab-pane fade" id="chart-pane-mobile" role="tabpanel">
+                                <div class="chart-container-mobile">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary">1D</button>
+                                            <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                            <button type="button" class="btn btn-outline-secondary">15M</button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <iframe id="tradingview-mobile" 
+                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                     
