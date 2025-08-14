@@ -323,29 +323,48 @@ foreach($_SESSION as $session_key => $session_value) {
 
     <!-- Mobile: Sticky Category Dropdown -->
     <div class="mobile-category-header sticky-top" style="display: none;">
-        <div class="dropdown w-100">
-            <button class="btn btn-outline-primary dropdown-toggle w-100 category-dropdown-btn" type="button" 
-                    id="mobileCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="<?php echo $icons[$category] ?? 'fas fa-chart-line'; ?> me-2"></i>
-                <?php echo $categories[$category] ?? 'Piyasa Seçin'; ?>
-            </button>
-            <ul class="dropdown-menu w-100 category-dropdown-menu" aria-labelledby="mobileCategoryDropdown">
-                <?php foreach ($categories as $cat_key => $cat_name): ?>
-                <li>
-                    <a class="dropdown-item d-flex align-items-center <?php echo $category == $cat_key ? 'active' : ''; ?>" 
-                       href="?group=<?php echo $cat_key; ?>">
-                        <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?> me-2"></i>
-                        <div>
-                            <div class="fw-bold"><?php echo $cat_name; ?></div>
-                            <small class="text-muted"><?php echo $descriptions[$cat_key] ?? ''; ?></small>
+        <div class="mobile-category-selector">
+            <div class="category-selector-header">
+                <i class="fas fa-layer-group me-2 text-primary"></i>
+                <span class="fw-bold">Borsa Kategorisi Seç</span>
+            </div>
+            <div class="dropdown w-100">
+                <button class="btn btn-outline-primary dropdown-toggle w-100 category-dropdown-btn" type="button" 
+                        id="mobileCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="d-flex align-items-center">
+                        <i class="<?php echo $icons[$category] ?? 'fas fa-chart-line'; ?> me-2"></i>
+                        <div class="text-start">
+                            <div class="fw-bold"><?php echo $categories[$category] ?? 'Kategori Seçin'; ?></div>
+                            <small class="text-muted">Piyasa kategorisini değiştir</small>
                         </div>
-                        <?php if ($category == $cat_key): ?>
-                        <i class="fas fa-check ms-auto text-primary"></i>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                <?php endforeach; ?>
-            </ul>
+                    </div>
+                </button>
+                <ul class="dropdown-menu w-100 category-dropdown-menu" aria-labelledby="mobileCategoryDropdown">
+                    <li>
+                        <div class="dropdown-header">
+                            <i class="fas fa-chart-bar me-2"></i>Mevcut Piyasa Kategorileri
+                        </div>
+                    </li>
+                    <?php foreach ($categories as $cat_key => $cat_name): ?>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center <?php echo $category == $cat_key ? 'active' : ''; ?>" 
+                           href="?group=<?php echo $cat_key; ?>">
+                            <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?> me-3"></i>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold"><?php echo $cat_name; ?></div>
+                                <small class="text-muted"><?php echo $descriptions[$cat_key] ?? ''; ?></small>
+                            </div>
+                            <?php if ($category == $cat_key): ?>
+                            <div class="ms-2">
+                                <i class="fas fa-check text-success"></i>
+                                <small class="text-success ms-1">Aktif</small>
+                            </div>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -677,6 +696,55 @@ foreach($_SESSION as $session_key => $session_value) {
     animation: successSlideIn 0.3s ease-out;
 }
 
+/* Mobile Success Popup - Smaller */
+@media (max-width: 768px) {
+    .success-content {
+        max-width: 280px;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .success-content h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .trade-summary {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .trade-amount {
+        font-size: 1.2rem;
+    }
+    
+    .trade-symbol {
+        font-size: 1rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .trade-breakdown {
+        padding: 0.75rem;
+    }
+    
+    .breakdown-row {
+        padding: 0.4rem 0;
+    }
+    
+    .breakdown-row span:first-child {
+        font-size: 0.8rem;
+    }
+    
+    .breakdown-row .value {
+        font-size: 0.85rem;
+    }
+    
+    .success-content .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
 @keyframes successSlideIn {
     from {
         transform: translate(-50%, -60%);
@@ -853,6 +921,44 @@ foreach($_SESSION as $session_key => $session_value) {
     .category-dropdown-menu .dropdown-item.active {
         background: linear-gradient(135deg, #007bff, #0056b3);
         color: white;
+    }
+    
+    /* Mobile Category Selector Header */
+    .mobile-category-selector {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .category-selector-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e9ecef;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 8px 8px 0 0;
+        font-size: 0.9rem;
+    }
+    
+    .mobile-category-selector .dropdown {
+        padding: 0.75rem;
+    }
+    
+    .category-dropdown-btn .d-flex {
+        text-align: left;
+    }
+    
+    .category-dropdown-btn small {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    .dropdown-header {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #495057;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 0.25rem;
     }
     
     /* Hide desktop table, show mobile cards */
