@@ -1395,4 +1395,92 @@ function getMinTradeAmount() {
 function formatTurkishNumber($number, $decimals = 2) {
     return number_format($number, $decimals, ',', '.');
 }
+
+// ===============================
+// SIMPLE CLEAN TRADING SYSTEM
+// ===============================
+
+/**
+ * Execute simple trade based on trading currency parameter
+ */
+function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price) {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    try {
+        $db->beginTransaction();
+        
+        // Get trading currency setting (1=TL, 2=USD)
+        $trading_currency = getTradingCurrency();
+        
+        if ($trading_currency == 1) { // TL Mode
+            // Convert USD to TL
+            $usd_to_tl_rate = getUSDTRYRate();
+            $tl_amount = $usd_amount * $usd_to_tl_rate;
+            $fee_tl = $tl_amount * 0.001; // 0.1% fee
+            $total_tl = $tl_amount + $fee_tl;
+            
+            if ($action == 'buy') {
+                // Check TL balance
+                $tl_balance = getUserBalance($user_id, 'tl');
+                if ($tl_balance < $total_tl) {
+                    throw new Exception('Insufficient TL balance');
+                }
+                
+                // Deduct TL from user balance
+                updateUserBalance($user_id, 'tl', $total_tl, 'subtract');
+                
+                // Record transaction in TL
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $db->prepare($query);
+                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                
+            } else { // sell
+                // For sell operations, we assume user has the asset
+                // Simplified: just add TL to balance (minus fee)
+                updateUserBalance($user_id, 'tl', $tl_amount - $fee_tl, 'add');
+                
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $db->prepare($query);
+                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+            }
+            
+        } else { // USD Mode
+            $fee_usd = $usd_amount * 0.001; // 0.1% fee
+            $total_usd = $usd_amount + $fee_usd;
+            
+            if ($action == 'buy') {
+                // Check USD balance
+                $usd_balance = getUserBalance($user_id, 'usd');
+                if ($usd_balance < $total_usd) {
+                    throw new Exception('Insufficient USD balance');
+                }
+                
+                // Deduct USD from user balance
+                updateUserBalance($user_id, 'usd', $total_usd, 'subtract');
+                
+                // Record transaction in USD
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $db->prepare($query);
+                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                
+            } else { // sell
+                // Add USD to balance (minus fee)
+                updateUserBalance($user_id, 'usd', $usd_amount - $fee_usd, 'add');
+                
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $stmt = $db->prepare($query);
+                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+            }
+        }
+        
+        $db->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $db->rollback();
+        error_log("Simple Trade Error: " . $e->getMessage());
+        return false;
+    }
+}
 ?>

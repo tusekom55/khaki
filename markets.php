@@ -32,13 +32,11 @@ if (isLoggedIn()) {
     ];
 }
 
-// Handle modal trading form submission
-if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
-    $modal_action = $_POST['modal_action']; // 'buy', 'sell', or 'leverage'
+// Clean Simple Trading Form Handler
+if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
+    $trade_action = $_POST['trade_action']; // 'buy' or 'sell'
     $symbol = $_POST['symbol'] ?? '';
-    $amount = (float)($_POST['amount'] ?? 0);
-    $leverage = (int)($_POST['leverage'] ?? 1);
-    $is_leverage_trade = ($_POST['trade_type'] ?? '') === 'leverage';
+    $usd_amount = (float)($_POST['usd_amount'] ?? 0);
     
     // Get market data for this symbol
     $current_market = null;
@@ -49,122 +47,18 @@ if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
         }
     }
     
-    if ($current_market && $amount > 0) {
-        $price_usd = (float)$current_market['price'];
+    if ($current_market && $usd_amount > 0) {
+        $usd_price = (float)$current_market['price'];
         
-        // Capture debug output
-        ob_start();
-        
-        // Execute trade using parametric system
-        $trade_result = executeTradeParametric($_SESSION['user_id'], $symbol, $modal_action, $amount, $price_usd, $leverage, $is_leverage_trade);
-        
-        // Get debug output
-        $debug_output = ob_get_clean();
-        
-        if ($trade_result) {
-            // Redirect to prevent form resubmission (PRG pattern)
+        // Execute simple trade
+        if (executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price)) {
             $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
             header('Location: markets.php?group=' . $category);
             exit();
         } else {
-            // Show debug info on screen
-            echo "<div style='position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 999999; color: white; font-family: monospace; font-size: 12px; padding: 20px; overflow-y: auto;'>";
-            echo "<h3 style='color: #ff6b6b;'>🔍 TRADE DEBUG INFORMATION</h3>";
-            echo "<button onclick='this.parentElement.style.display=\"none\"' style='position: absolute; top: 10px; right: 10px; background: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;'>KAPAT</button>";
-            
-            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-            echo "<h4 style='color: #63b3ed;'>📊 İşlem Detayları:</h4>";
-            echo "User ID: " . $_SESSION['user_id'] . "<br>";
-            echo "Symbol: " . $symbol . "<br>";
-            echo "Action: " . $modal_action . "<br>";
-            echo "Amount: " . $amount . " USD<br>";
-            echo "Price: $" . $price_usd . "<br>";
-            echo "Leverage: " . $leverage . "x<br>";
-            echo "</div>";
-            
-            // Get current balances
-            $tl_balance = getUserBalance($_SESSION['user_id'], 'tl');
-            $trading_currency = getTradingCurrency();
-            $usd_try_rate = getUSDTRYRate();
-            
-            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-            echo "<h4 style='color: #68d391;'>💰 Bakiye Bilgileri:</h4>";
-            echo "Current TL Balance: " . $tl_balance . " TL<br>";
-            echo "Trading Currency: " . ($trading_currency == 1 ? 'TL (1)' : 'USD (2)') . "<br>";
-            echo "USD/TRY Rate: " . $usd_try_rate . "<br>";
-            echo "</div>";
-            
-            // Calculate expected values
-            $total_usd = $amount * $price_usd;
-            $fee_usd = $total_usd * 0.001;
-            $total_tl = $total_usd * $usd_try_rate;
-            $fee_tl = $fee_usd * $usd_try_rate;
-            $total_with_fee = $total_tl + $fee_tl;
-            
-            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-            echo "<h4 style='color: #f6e05e;'>🧮 Hesaplamaları:</h4>";
-            echo "Total USD: " . $total_usd . "<br>";
-            echo "Fee USD: " . $fee_usd . "<br>";
-            echo "Total TL: " . $total_tl . "<br>";
-            echo "Fee TL: " . $fee_tl . "<br>";
-            echo "Total with Fee: " . $total_with_fee . " TL<br>";
-            echo "Balance Check: " . $tl_balance . " >= " . $total_with_fee . " = " . ($tl_balance >= $total_with_fee ? 'PASS ✅' : 'FAIL ❌') . "<br>";
-            echo "</div>";
-            
-            // Check if error log file exists
-            $log_files = [
-                'error_log',
-                'error.log', 
-                'php_errors.log',
-                '../error_log',
-                '../logs/error.log'
-            ];
-            
-            $recent_logs = [];
-            foreach ($log_files as $log_file) {
-                if (file_exists($log_file)) {
-                    $log_content = file_get_contents($log_file);
-                    $lines = explode("\n", $log_content);
-                    $recent_lines = array_slice($lines, -50); // Son 50 satır
-                    
-                    foreach ($recent_lines as $line) {
-                        if (strpos($line, 'TRADE DEBUG') !== false || strpos($line, 'TRADE ERROR') !== false) {
-                            $recent_logs[] = $line;
-                        }
-                    }
-                    break;
-                }
-            }
-            
-            if (!empty($recent_logs)) {
-                echo "<div style='background: #1a202c; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-                echo "<h4 style='color: #fc8181;'>📝 Son Trade Log'ları:</h4>";
-                echo "<pre style='color: #e2e8f0; max-height: 300px; overflow-y: auto;'>";
-                foreach (array_slice($recent_logs, -20) as $log) {
-                    echo htmlspecialchars($log) . "\n";
-                }
-                echo "</pre>";
-                echo "</div>";
-            } else {
-                echo "<div style='background: #1a202c; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-                echo "<h4 style='color: #fc8181;'>📝 Log Durumu:</h4>";
-                echo "Error log dosyası bulunamadı veya TRADE DEBUG logları yok.<br>";
-                echo "Checked locations: " . implode(', ', $log_files) . "<br>";
-                echo "</div>";
-            }
-            
-            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
-            echo "<h4 style='color: #ed8936;'>🎯 Sonraki Adımlar:</h4>";
-            echo "1. Yukarıdaki 'Balance Check' sonucuna bakın<br>";
-            echo "2. PASS ise başka bir sorun var, FAIL ise balance problemi<br>";
-            echo "3. Log'larda 'TRADE DEBUG DETAIL' arayın<br>";
-            echo "4. Bu sayfayı kapatıp tekrar deneyin<br>";
-            echo "</div>";
-            
-            echo "</div>";
-            
-            // Don't redirect, stay on page to show debug
-            $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem başarısız - Debug bilgileri gösteriliyor' : 'Trade failed - Debug info shown';
+            $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
+            header('Location: markets.php?group=' . $category);
+            exit();
         }
     } else {
         $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'Geçersiz işlem parametreleri.' : 'Invalid trade parameters.';
@@ -729,166 +623,73 @@ function updateTradingViewWidget(symbol) {
     iframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
 }
 
-function calculateTrade() {
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    const leverage = parseInt(document.getElementById('leverage').value) || 1;
+// Simple Clean Trading Calculation
+function calculateSimpleTrade() {
+    const usdAmount = parseFloat(document.getElementById('usd_amount').value) || 0;
     const priceUSD = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
     
-    // FORCE USD MODE - problem çözümü için
-    let amountType = 'usd';
-    
-    // Radio button'ları kontrol et
-    const amountUSDRadio = document.getElementById('amountUSD');
-    const amountLotRadio = document.getElementById('amountLot');
-    
-    console.log('RADIO BUTTON DEBUG:', {
-        amountUSDRadio: amountUSDRadio ? amountUSDRadio.checked : 'not found',
-        amountLotRadio: amountLotRadio ? amountLotRadio.checked : 'not found'
-    });
-    
-    // Force USD mode initially
-    if (amountUSDRadio) {
-        amountUSDRadio.checked = true;
-    }
-    if (amountLotRadio) {
-        amountLotRadio.checked = false;
+    if (usdAmount <= 0) {
+        // Reset displays if no amount
+        document.getElementById('totalValue').textContent = '$0.00';
+        document.getElementById('requiredMargin').textContent = '$0.00';
+        document.getElementById('tradingFee').textContent = '$0.00';
+        return;
     }
     
-    let totalUSD, lotAmount;
+    const fee = usdAmount * 0.001; // 0.1% fee
     
-    console.log('calculateTrade DEBUG:', {
-        amount: amount,
-        priceUSD: priceUSD,
-        amountType: amountType,
-        leverage: leverage,
-        inputElement: document.getElementById('amount') ? 'found' : 'not found'
-    });
-    
-    // ALWAYS USE USD MODE for now
-    totalUSD = amount; // Direct USD amount
-    lotAmount = amount / priceUSD; // Calculate lot equivalent
-    
-    console.log('FORCED USD Calculation result:', {
-        totalUSD: totalUSD,
-        lotAmount: lotAmount,
-        formula: `${amount} USD direct, lot = ${amount} / ${priceUSD}`
-    });
-    
-    // TL MODE HESAPLAMASI - Parametre 1 ise TL modu
-    if (TRADING_CURRENCY === 1) { // TL mode
-        // USD miktarını TL'ye çevir
-        const totalTL = totalUSD * USD_TRY_RATE;
-        const feeTL = totalTL * 0.001; // %0.1 işlem ücreti
+    if (TRADING_CURRENCY === 1) { // TL Mode
+        // Convert USD to TL 
+        const totalTL = usdAmount * USD_TRY_RATE;
+        const feeTL = fee * USD_TRY_RATE;
         const totalWithFeeTL = totalTL + feeTL;
         
-        // Kaldıraç hesabı (sadece leverage trading için)
-        const requiredMarginTL = leverage > 1 ? totalTL / leverage : totalWithFeeTL;
-        
-        // Kalan bakiye hesabı (varsayılan 900 TL - demo amaçlı)
-        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 900; ?>;
+        // Get current balance
+        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 10000; ?>;
         const remainingBalance = currentBalance - totalWithFeeTL;
         
-        // Display update
+        // Update display
         document.getElementById('totalValue').textContent = formatTurkishNumber(totalTL, 2) + ' TL';
-        document.getElementById('requiredMargin').textContent = formatTurkishNumber(requiredMarginTL, 2) + ' TL';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFeeTL, 2) + ' TL';
         document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' TL';
         
-        // Label güncelleme
-        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
-        
-        // Exchange rate info göster
+        // Show exchange rate info
         const exchangeInfo = document.getElementById('exchangeInfo');
         if (exchangeInfo) {
             exchangeInfo.style.display = 'flex';
             exchangeInfo.style.setProperty('display', 'flex', 'important');
-            const exchangeRateSpan = document.getElementById('exchangeRate');
-            if (exchangeRateSpan) {
-                exchangeRateSpan.textContent = `1 USD = ${formatTurkishNumber(USD_TRY_RATE, 4)} TL`;
-            }
         }
         
-    } else { // USD mode
-        const feeUSD = totalUSD * 0.001;
-        const totalWithFeeUSD = totalUSD + feeUSD;
-        const requiredMarginUSD = leverage > 1 ? totalUSD / leverage : totalWithFeeUSD;
-        
-        // Kalan bakiye hesabı
-        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'usd') : 100; ?>;
-        const remainingBalance = currentBalance - totalWithFeeUSD;
-        
-        document.getElementById('totalValue').textContent = formatTurkishNumber(totalUSD, 2) + ' USD';
-        document.getElementById('requiredMargin').textContent = formatTurkishNumber(requiredMarginUSD, 2) + ' USD';
-        document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' USD';
-        
-        // Label güncelleme
+        // Update label
         document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
         
-        // Exchange rate info gizle
+    } else { // USD Mode
+        const totalWithFeeUSD = usdAmount + fee;
+        
+        // Get current balance  
+        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'usd') : 1000; ?>;
+        const remainingBalance = currentBalance - totalWithFeeUSD;
+        
+        // Update display
+        document.getElementById('totalValue').textContent = formatTurkishNumber(usdAmount, 2) + ' USD';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFeeUSD, 2) + ' USD';
+        document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' USD';
+        
+        // Hide exchange rate info
         const exchangeInfo = document.getElementById('exchangeInfo');
         if (exchangeInfo) {
             exchangeInfo.style.display = 'none';
         }
+        
+        // Update label
+        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
     }
     
-    // Lot miktarı göster
+    // Calculate lot equivalent for display
+    const lotAmount = usdAmount / priceUSD;
     document.getElementById('lotEquivalent').style.display = 'flex';
     document.getElementById('lotAmount').textContent = formatTurkishNumber(lotAmount, 4) + ' Lot';
-    
-    // Leverage display
-    document.getElementById('leverageDisplay').textContent = leverage + 'x';
 }
-
-function calculateTradeSell() {
-    const amount = parseFloat(document.getElementById('amountSell').value) || 0;
-    const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
-    const amountType = document.querySelector('input[name="amountTypeSell"]:checked').value;
-    
-    let total;
-    if (amountType === 'usd') {
-        // USD ile işlem
-        total = amount;
-    } else {
-        // Lot ile işlem
-        total = amount * price;
-    }
-    
-    const fee = total * 0.001; // 0.1% fee
-    
-    // Update sell form calculations (we'll add IDs to sell form elements)
-}
-
-// Amount type change handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // Buy form amount type handlers
-    document.getElementById('amountLot').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('amountUnit').textContent = 'Lot';
-            calculateTrade();
-        }
-    });
-    
-    document.getElementById('amountUSD').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('amountUnit').textContent = 'USD';
-            calculateTrade();
-        }
-    });
-    
-    // Sell form amount type handlers
-    document.getElementById('amountLotSell').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('amountUnitSell').textContent = 'Lot';
-            calculateTradeSell();
-        }
-    });
-    
-    document.getElementById('amountUSDSell').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('amountUnitSell').textContent = 'USD';
-            calculateTradeSell();
-        }
-    });
-});
 </script>
 
 <!-- Trading Modal -->
@@ -969,26 +770,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endif; ?>
                                     
                                     <?php if (isLoggedIn()): ?>
-                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>" onsubmit="console.log('BUY FORM SUBMIT!'); return true;">
-                                        <input type="hidden" name="modal_action" value="buy">
+                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                        <input type="hidden" name="trade_action" value="buy">
                                         <input type="hidden" name="symbol" id="buySymbol" value="">
-                                        <input type="hidden" name="trade_type" id="buyTradeType" value="">
+                                        
                                         <div class="mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <label class="form-label mb-0">Miktar</label>
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <input type="radio" class="btn-check" name="amountType" id="amountLot" value="lot">
-                                                    <label class="btn btn-outline-primary" for="amountLot">Lot</label>
-                                                    
-                                                    <input type="radio" class="btn-check" name="amountType" id="amountUSD" value="usd" checked>
-                                                    <label class="btn btn-outline-primary" for="amountUSD">USD</label>
-                                                </div>
-                                            </div>
+                                            <label class="form-label">USD Miktar</label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" 
-                                                       placeholder="0.00" oninput="calculateTrade()" required>
-                                                <span class="input-group-text" id="amountUnit">USD</span>
+                                                <input type="number" class="form-control" id="usd_amount" name="usd_amount" step="0.01" min="0.01" 
+                                                       placeholder="10.00" oninput="calculateSimpleTrade()" required>
+                                                <span class="input-group-text">USD</span>
                                             </div>
+                                            <small class="text-muted">Satın almak istediğiniz USD tutarı</small>
                                         </div>
                                         
                                         <div class="mb-3 leverage-control">
