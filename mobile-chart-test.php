@@ -348,27 +348,8 @@
                     
                     <!-- Desktop Layout -->
                     <div class="desktop-layout row g-0">
-                        <!-- Chart Section -->
-                        <div class="col-md-8 border-end">
-                            <div class="p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="mb-0">📈 Fiyat Grafiği</h6>
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-secondary">1D</button>
-                                        <button type="button" class="btn btn-outline-secondary active">1H</button>
-                                        <button type="button" class="btn btn-outline-secondary">15M</button>
-                                    </div>
-                                </div>
-                                <div class="chart-container">
-                                    <iframe id="tradingview-desktop" 
-                                            src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_desktop&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL">
-                                    </iframe>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Trading Section -->
-                        <div class="col-md-4">
+                        <!-- Trading Section - SOL TARAF -->
+                        <div class="col-md-4 border-end">
                             <div class="p-3">
                                 <div class="trading-section">
                                     <ul class="nav nav-pills nav-fill mb-3">
@@ -423,6 +404,25 @@
                                             <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
                                         </button>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Section - SAĞ TARAF -->
+                        <div class="col-md-8">
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary">1D</button>
+                                        <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                        <button type="button" class="btn btn-outline-secondary">15M</button>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <iframe id="tradingview-desktop" 
+                                            src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_desktop&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL">
+                                    </iframe>
                                 </div>
                             </div>
                         </div>
