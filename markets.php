@@ -50,25 +50,12 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
     if ($current_market && $usd_amount > 0) {
         $usd_price = (float)$current_market['price'];
         
-        // Debug: Check values before trade
-        error_log("TRADE ATTEMPT DEBUG:");
-        error_log("User ID: " . $_SESSION['user_id']);
-        error_log("Symbol: " . $symbol);
-        error_log("Action: " . $trade_action);
-        error_log("USD Amount: " . $usd_amount);
-        error_log("USD Price: " . $usd_price);
-        error_log("Trading Currency: " . getTradingCurrency());
-        error_log("TL Balance: " . getUserBalance($_SESSION['user_id'], 'tl'));
-        error_log("USD Balance: " . getUserBalance($_SESSION['user_id'], 'usd'));
-        
         // Execute simple trade
         if (executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price)) {
-            error_log("TRADE SUCCESS: executeSimpleTrade returned true");
             $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
             header('Location: markets.php?group=' . $category);
             exit();
         } else {
-            error_log("TRADE FAILED: executeSimpleTrade returned false");
             $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
             header('Location: markets.php?group=' . $category);
             exit();
@@ -385,6 +372,106 @@ foreach($old_error_keys as $key) {
     </div>
 </div>
 
+<!-- Success Popup CSS -->
+<style>
+.success-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.success-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.success-popup.closing {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.success-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.success-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    width: 90%;
+    animation: successSlideIn 0.3s ease-out;
+}
+
+@keyframes successSlideIn {
+    from {
+        transform: translate(-50%, -60%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    margin-bottom: 1rem;
+}
+
+.success-icon i {
+    font-size: 4rem;
+    color: #28a745;
+    animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.success-content h3 {
+    color: #28a745;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.success-content p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+.success-content .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+</style>
+
 <script>
 // Parametric system constants
 const TRADING_CURRENCY = <?php echo $trading_currency; ?>; // 1=TL, 2=USD
@@ -644,34 +731,41 @@ function updateTradingViewWidget(symbol) {
     iframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
 }
 
-// Simple Clean Trading Calculation
+// Simple Clean Trading Calculation with Smart Button Control
 function calculateSimpleTrade() {
     const usdAmount = parseFloat(document.getElementById('usd_amount').value) || 0;
     const priceUSD = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
+    const submitBtn = document.querySelector('#buyForm button[type="submit"]');
     
     if (usdAmount <= 0) {
         // Reset displays if no amount
         document.getElementById('totalValue').textContent = '$0.00';
         document.getElementById('requiredMargin').textContent = '$0.00';
         document.getElementById('tradingFee').textContent = '$0.00';
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.className = 'btn btn-success w-100';
+        submitBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>SATIN AL';
         return;
     }
     
     const fee = usdAmount * 0.001; // 0.1% fee
+    let currentBalance, totalWithFee, remainingBalance;
     
     if (TRADING_CURRENCY === 1) { // TL Mode
         // Convert USD to TL 
         const totalTL = usdAmount * USD_TRY_RATE;
         const feeTL = fee * USD_TRY_RATE;
-        const totalWithFeeTL = totalTL + feeTL;
+        totalWithFee = totalTL + feeTL;
         
         // Get current balance
-        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 10000; ?>;
-        const remainingBalance = currentBalance - totalWithFeeTL;
+        currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 10000; ?>;
+        remainingBalance = currentBalance - totalWithFee;
         
         // Update display
         document.getElementById('totalValue').textContent = formatTurkishNumber(totalTL, 2) + ' TL';
-        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFeeTL, 2) + ' TL';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFee, 2) + ' TL';
         document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' TL';
         
         // Show exchange rate info
@@ -688,15 +782,15 @@ function calculateSimpleTrade() {
         }
         
     } else { // USD Mode
-        const totalWithFeeUSD = usdAmount + fee;
+        totalWithFee = usdAmount + fee;
         
         // Get current balance  
-        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'usd') : 1000; ?>;
-        const remainingBalance = currentBalance - totalWithFeeUSD;
+        currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'usd') : 1000; ?>;
+        remainingBalance = currentBalance - totalWithFee;
         
         // Update display
         document.getElementById('totalValue').textContent = formatTurkishNumber(usdAmount, 2) + ' USD';
-        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFeeUSD, 2) + ' USD';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(totalWithFee, 2) + ' USD';
         document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' USD';
         
         // Hide exchange rate info
@@ -712,11 +806,81 @@ function calculateSimpleTrade() {
         }
     }
     
+    // SMART BUTTON CONTROL - Anlık Bakiye Kontrolü
+    if (totalWithFee > currentBalance) {
+        // Yetersiz Bakiye - Kırmızı Buton
+        submitBtn.disabled = true;
+        submitBtn.className = 'btn btn-danger w-100';
+        submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>YETERSİZ BAKİYE';
+    } else {
+        // Yeterli Bakiye - Yeşil Buton
+        submitBtn.disabled = false;
+        submitBtn.className = 'btn btn-success w-100';
+        submitBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>SATIN AL';
+    }
+    
     // Calculate lot equivalent for display
     const lotAmount = usdAmount / priceUSD;
     document.getElementById('lotEquivalent').style.display = 'flex';
     document.getElementById('lotAmount').textContent = formatTurkishNumber(lotAmount, 4) + ' Lot';
 }
+
+// Success Popup System
+function showSuccessPopup(message) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('successPopup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Create popup HTML
+    const popup = document.createElement('div');
+    popup.id = 'successPopup';
+    popup.className = 'success-popup';
+    popup.innerHTML = `
+        <div class="success-overlay"></div>
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>İşlem Başarılı!</h3>
+            <p>${message}</p>
+            <button onclick="closeSuccessPopup()" class="btn btn-success">
+                <i class="fas fa-check me-2"></i>Tamam
+            </button>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(popup);
+    
+    // Show with animation
+    setTimeout(() => {
+        popup.classList.add('show');
+    }, 10);
+    
+    // Auto close after 5 seconds
+    setTimeout(() => {
+        closeSuccessPopup();
+    }, 5000);
+}
+
+function closeSuccessPopup() {
+    const popup = document.getElementById('successPopup');
+    if (popup) {
+        popup.classList.add('closing');
+        setTimeout(() => {
+            popup.remove();
+        }, 300);
+    }
+}
+
+// Check for success message on page load
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($success_message): ?>
+    showSuccessPopup('<?php echo addslashes($success_message); ?>');
+    <?php endif; ?>
+});
 
 // Test function to make sure modal opens
 function testModal() {
