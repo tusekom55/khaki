@@ -57,28 +57,51 @@ $markets = getMarketData('us_stocks', 6);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
         }
         
-        .navbar-nav .nav-link {
-            position: relative !important;
-            z-index: 1001 !important;
+        .navbar * {
             pointer-events: auto !important;
+            position: relative !important;
+            z-index: 10000 !important;
         }
         
-        .navbar-brand {
-            position: relative !important;
-            z-index: 1001 !important;
+        .navbar .navbar-nav .nav-link {
             pointer-events: auto !important;
+            z-index: 10001 !important;
+            position: relative !important;
+            display: block !important;
         }
         
-        .btn-outline-primary, .btn-primary {
-            position: relative !important;
-            z-index: 1001 !important;
+        .navbar .navbar-brand {
             pointer-events: auto !important;
+            z-index: 10001 !important;
+            position: relative !important;
+            display: block !important;
         }
         
-        .language-switcher a {
-            position: relative !important;
-            z-index: 1001 !important;
+        .navbar .btn-outline-primary, 
+        .navbar .btn-primary {
             pointer-events: auto !important;
+            z-index: 10001 !important;
+            position: relative !important;
+            display: inline-block !important;
+        }
+        
+        .navbar .language-switcher a {
+            pointer-events: auto !important;
+            z-index: 10001 !important;
+            position: relative !important;
+            display: inline-block !important;
+        }
+        
+        .navbar .dropdown-toggle {
+            pointer-events: auto !important;
+            z-index: 10001 !important;
+            position: relative !important;
+        }
+        
+        .navbar .dropdown-menu {
+            pointer-events: auto !important;
+            z-index: 10002 !important;
+            position: absolute !important;
         }
 
         .container {
