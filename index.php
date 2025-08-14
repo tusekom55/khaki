@@ -28,8 +28,82 @@ $markets = getMarketData('us_stocks', 6);
     <link href="assets/css/landing-index.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Include header -->
-    <?php include 'includes/header.php'; ?>
+    <!-- Navigation - Direct Integration -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" style="z-index: 10000 !important;">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="index.php" style="font-size: 1.5rem; z-index: 10001 !important; position: relative;">
+                <i class="fas fa-chart-line me-2"></i><?php echo SITE_NAME; ?>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="z-index: 10001 !important;">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active bg-primary text-white rounded' : 'text-dark'; ?>" href="index.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
+                            <i class="fas fa-home me-1"></i><?php echo getCurrentLang() == 'tr' ? 'Ana Sayfa' : 'Home'; ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium text-dark" href="markets.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
+                            <i class="fas fa-chart-bar me-1"></i><?php echo t('markets'); ?>
+                        </a>
+                    </li>
+                    <?php if (isLoggedIn()): ?>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium text-dark" href="trading.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
+                            <i class="fas fa-exchange-alt me-1"></i><?php echo t('trading'); ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium text-dark" href="wallet.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
+                            <i class="fas fa-wallet me-1"></i><?php echo t('wallet'); ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium text-dark" href="profile.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
+                            <i class="fas fa-user me-1"></i><?php echo t('profile'); ?>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+                
+                <div class="d-flex align-items-center">
+                    <!-- Language Switcher -->
+                    <div class="me-3" style="z-index: 10001 !important; position: relative;">
+                        <a href="?lang=tr" class="btn btn-sm <?php echo getCurrentLang() == 'tr' ? 'btn-primary' : 'btn-outline-secondary'; ?> me-1">TR</a>
+                        <a href="?lang=en" class="btn btn-sm <?php echo getCurrentLang() == 'en' ? 'btn-primary' : 'btn-outline-secondary'; ?>">EN</a>
+                    </div>
+                    
+                    <?php if (isLoggedIn()): ?>
+                        <!-- User Balance -->
+                        <div class="me-3">
+                            <small class="text-muted"><?php echo t('balance'); ?>:</small>
+                            <strong class="text-success"><?php echo getFormattedHeaderBalance($_SESSION['user_id']); ?></strong>
+                        </div>
+                        
+                        <!-- User Menu -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="z-index: 10001 !important; position: relative;">
+                                <i class="fas fa-user me-1"></i><?php echo $_SESSION['username']; ?>
+                            </button>
+                            <ul class="dropdown-menu" style="z-index: 10002 !important;">
+                                <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user me-2"></i><?php echo t('profile'); ?></a></li>
+                                <li><a class="dropdown-item" href="wallet.php"><i class="fas fa-wallet me-2"></i><?php echo t('wallet'); ?></a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i><?php echo t('logout'); ?></a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <a href="login.php" class="btn btn-outline-primary me-2" style="z-index: 10001 !important; position: relative;"><?php echo t('login'); ?></a>
+                        <a href="register.php" class="btn btn-primary" style="z-index: 10001 !important; position: relative;"><?php echo t('register'); ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero Slider -->
     <section class="hero-slider" id="hero">
