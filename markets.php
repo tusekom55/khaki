@@ -632,34 +632,29 @@ function calculateTrade() {
         lotAmount = amount;
     }
     
-    // Convert to display currency based on trading currency setting
-    let displayTotal, displayMargin, displayFee, currencyLabel;
-    
+    // TL MODE HESAPLAMASI - Parametre 1 ise TL modu
     if (TRADING_CURRENCY === 1) { // TL mode
-        displayTotal = totalUSD * USD_TRY_RATE;
-        displayMargin = (totalUSD / leverage) * USD_TRY_RATE;
-        displayFee = (totalUSD * 0.001) * USD_TRY_RATE;
-        currencyLabel = 'TL';
-    } else { // USD mode
-        displayTotal = totalUSD;
-        displayMargin = totalUSD / leverage;
-        displayFee = totalUSD * 0.001;
-        currencyLabel = 'USD';
-    }
-    
-    // Update display
-    document.getElementById('lotEquivalent').style.display = 'flex';
-    document.getElementById('lotAmount').textContent = formatPrice(lotAmount) + ' Lot';
-    
-    document.getElementById('totalValue').textContent = formatPrice(displayTotal) + ' ' + currencyLabel;
-    document.getElementById('requiredMargin').textContent = formatPrice(displayMargin) + ' ' + currencyLabel;
-    document.getElementById('tradingFee').textContent = formatPrice(displayFee) + ' ' + currencyLabel;
-    
-    // Update leverage display
-    document.getElementById('leverageDisplay').textContent = leverage + 'x';
-    
-    // Show exchange rate info for TL mode
-    if (TRADING_CURRENCY === 1) {
+        // USD miktarını TL'ye çevir
+        const totalTL = totalUSD * USD_TRY_RATE;
+        const feeTL = totalTL * 0.001; // %0.1 işlem ücreti
+        const totalWithFeeTL = totalTL + feeTL;
+        
+        // Kaldıraç hesabı (sadece leverage trading için)
+        const requiredMarginTL = leverage > 1 ? totalTL / leverage : totalWithFeeTL;
+        
+        // Kalan bakiye hesabı (varsayılan 900 TL - demo amaçlı)
+        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 900; ?>;
+        const remainingBalance = currentBalance - totalWithFeeTL;
+        
+        // Display update
+        document.getElementById('totalValue').textContent = formatTurkishNumber(totalTL, 2) + ' TL';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(requiredMarginTL, 2) + ' TL';
+        document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' TL';
+        
+        // Label güncelleme
+        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
+        
+        // Exchange rate info göster
         const exchangeInfo = document.getElementById('exchangeInfo');
         if (exchangeInfo) {
             exchangeInfo.style.display = 'flex';
@@ -669,12 +664,36 @@ function calculateTrade() {
                 exchangeRateSpan.textContent = `1 USD = ${formatTurkishNumber(USD_TRY_RATE, 4)} TL`;
             }
         }
-    } else {
+        
+    } else { // USD mode
+        const feeUSD = totalUSD * 0.001;
+        const totalWithFeeUSD = totalUSD + feeUSD;
+        const requiredMarginUSD = leverage > 1 ? totalUSD / leverage : totalWithFeeUSD;
+        
+        // Kalan bakiye hesabı
+        const currentBalance = <?php echo isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'usd') : 100; ?>;
+        const remainingBalance = currentBalance - totalWithFeeUSD;
+        
+        document.getElementById('totalValue').textContent = formatTurkishNumber(totalUSD, 2) + ' USD';
+        document.getElementById('requiredMargin').textContent = formatTurkishNumber(requiredMarginUSD, 2) + ' USD';
+        document.getElementById('tradingFee').textContent = formatTurkishNumber(remainingBalance, 2) + ' USD';
+        
+        // Label güncelleme
+        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
+        
+        // Exchange rate info gizle
         const exchangeInfo = document.getElementById('exchangeInfo');
         if (exchangeInfo) {
             exchangeInfo.style.display = 'none';
         }
     }
+    
+    // Lot miktarı göster
+    document.getElementById('lotEquivalent').style.display = 'flex';
+    document.getElementById('lotAmount').textContent = formatTurkishNumber(lotAmount, 4) + ' Lot';
+    
+    // Leverage display
+    document.getElementById('leverageDisplay').textContent = leverage + 'x';
 }
 
 function calculateTradeSell() {
