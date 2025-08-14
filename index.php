@@ -244,47 +244,56 @@ $markets = getMarketData('us_stocks', 6);
     </section>
 
 
-    <!-- PURE INLINE SERVICE CARDS -->
+    <!-- BORSA TEMALI SERVICE CARDS -->
     <section style="background: #f8f9fa; padding: 80px 0; z-index: 100; position: relative;">
         <div class="container">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-size: 2.5rem; font-weight: 700; color: #0d1b4c; margin-bottom: 20px;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Neden GlobalBorsa?' : 'Why GlobalBorsa?'; ?>
+                </h2>
+                <p style="font-size: 1.1rem; color: #666; max-width: 600px; margin: 0 auto;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Türkiye\'nin en güvenilir kripto borsası olarak size sunduğumuz avantajlar' : 'Advantages we offer as Turkey\'s most trusted crypto exchange'; ?>
+                </p>
+            </div>
+            
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; margin-top: 20px;">
                 
-                <!-- Security Card -->
-                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
-                        <i class="fas fa-shield-alt"></i>
+                <!-- Düşük Komisyon Card -->
+                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #28a745; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #28a745, #1e7e34); border-radius: 50%; color: #fff; font-size: 2rem;">
+                        💰
                     </div>
                     <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
-                        <?php echo getCurrentLang() == 'tr' ? 'Güvenli ve Şifreli' : 'Secure and Encrypted'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Düşük Komisyonlar' : 'Low Commissions'; ?>
                     </h3>
                     <p style="color: #666; line-height: 1.6; margin: 0;">
-                        <?php echo getCurrentLang() == 'tr' ? 'SSL şifreleme ve çoklu güvenlik katmanları ile paranız her zaman güvende.' : 'Your money is always safe with SSL encryption and multiple security layers.'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Türkiye\'nin en düşük komisyon oranları ile daha fazla kar edin. Maker %0.05, Taker %0.10' : 'Earn more with Turkey\'s lowest commission rates. Maker 0.05%, Taker 0.10%'; ?>
                     </p>
                 </div>
 
-                <!-- Trading Tools Card -->
+                <!-- Hızlı İşlem Card -->
                 <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
                     <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
-                        <i class="fas fa-chart-bar"></i>
+                        ⚡
                     </div>
                     <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
-                        <?php echo getCurrentLang() == 'tr' ? 'Gelişmiş Ticaret Araçları' : 'Advanced Trading Tools'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Hızlı İşlemler' : 'Fast Transactions'; ?>
                     </h3>
                     <p style="color: #666; line-height: 1.6; margin: 0;">
-                        <?php echo getCurrentLang() == 'tr' ? 'Profesyonel grafik araçları ve teknik analiz göstergeleri ile ticaret yapın.' : 'Trade with professional charting tools and technical analysis indicators.'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Milisaniye hızında emir eşleştirme motoru ile anlık alım-satım yapın. 0.1 saniyede işlem tamamlama.' : 'Trade instantly with millisecond-speed order matching engine. Complete transactions in 0.1 seconds.'; ?>
                     </p>
                 </div>
 
-                <!-- Support Card -->
-                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
-                        <i class="fas fa-headset"></i>
+                <!-- Güvenlik Card -->
+                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #dc3545; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #dc3545, #c82333); border-radius: 50%; color: #fff; font-size: 2rem;">
+                        🛡️
                     </div>
                     <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
-                        <?php echo getCurrentLang() == 'tr' ? '7/24 Türkçe Destek' : '24/7 Turkish Support'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Güvenli Altyapı' : 'Secure Infrastructure'; ?>
                     </h3>
                     <p style="color: #666; line-height: 1.6; margin: 0;">
-                        <?php echo getCurrentLang() == 'tr' ? 'Uzman ekibimiz 7 gün 24 saat Türkçe destek hizmeti sunmaktadır.' : 'Our expert team provides 24/7 Turkish support service.'; ?>
+                        <?php echo getCurrentLang() == 'tr' ? 'Çoklu imza, soğuk cüzdan depolama ve 2FA ile paranız %100 güvende. Sigortalı varlık koruması.' : 'Your money is 100% safe with multi-signature, cold wallet storage and 2FA. Insured asset protection.'; ?>
                     </p>
                 </div>
                 
@@ -505,47 +514,84 @@ $markets = getMarketData('us_stocks', 6);
         </div>
     </section>
 
-    <!-- Education Section -->
-    <section class="education" id="egitim">
+    <!-- BORSA TEMALI EDUCATION SECTION -->
+    <section style="background: #f8f9fa; padding: 80px 0; z-index: 100; position: relative;">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title"><?php echo getCurrentLang() == 'tr' ? 'Eğitim ve Analiz Merkezi' : 'Education and Analysis Center'; ?></h2>
-                <p class="section-description"><?php echo getCurrentLang() == 'tr' ? 'Başarılı yatırımcı olmak için gereken tüm bilgileri uzman ekibimizden öğrenin.' : 'Learn everything you need to become a successful investor from our expert team.'; ?></p>
+            <div style="text-align: center; margin-bottom: 60px;">
+                <h2 style="font-size: 2.5rem; font-weight: 700; color: #0d1b4c; margin-bottom: 20px;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Kripto Trading Akademisi' : 'Crypto Trading Academy'; ?>
+                </h2>
+                <p style="font-size: 1.1rem; color: #666; max-width: 700px; margin: 0 auto;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Profesyonel trader olmak için ihtiyacınız olan tüm bilgileri uzman analistlerimizden öğrenin' : 'Learn everything you need to become a professional trader from our expert analysts'; ?>
+                </p>
             </div>
 
-            <div class="education-grid">
-                <div class="education-card">
-                    <div class="card-image">
-                        <i class="fas fa-video"></i>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px;">
+                
+                <!-- Bitcoin Trading Card -->
+                <div style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'">
+                    <div style="height: 200px; background: linear-gradient(135deg, #f7931a, #ff8c00); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"40\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" opacity=\"0.1\"/><path d=\"M30 40h40M30 50h40M30 60h40\" stroke=\"white\" stroke-width=\"1\" opacity=\"0.1\"/></svg>') repeat; opacity: 0.1;"></div>
+                        ₿
                     </div>
-                    <div class="card-content">
-                        <h3><?php echo getCurrentLang() == 'tr' ? 'Canlı Webinarlar' : 'Live Webinars'; ?></h3>
-                        <p><?php echo getCurrentLang() == 'tr' ? 'Uzman analistlerden canlı kripto piyasa analizleri ve ticaret stratejileri öğrenin.' : 'Learn live crypto market analysis and trading strategies from expert analysts.'; ?></p>
-                        <button class="card-btn"><?php echo getCurrentLang() == 'tr' ? 'Katıl' : 'Join'; ?></button>
-                    </div>
-                </div>
-
-                <div class="education-card">
-                    <div class="card-image">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3><?php echo getCurrentLang() == 'tr' ? 'Kripto Sözlüğü' : 'Crypto Dictionary'; ?></h3>
-                        <p><?php echo getCurrentLang() == 'tr' ? 'Kripto para ticaretinde kullanılan tüm terimleri detaylı açıklamalarıyla öğrenin.' : 'Learn all terms used in cryptocurrency trading with detailed explanations.'; ?></p>
-                        <button class="card-btn"><?php echo getCurrentLang() == 'tr' ? 'Keşfet' : 'Explore'; ?></button>
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'Bitcoin Trading Rehberi' : 'Bitcoin Trading Guide'; ?>
+                        </h3>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'Bitcoin\'in temellerinden profesyonel trading stratejilerine kadar her şeyi öğrenin. Volatilite yönetimi ve risk kontrolü.' : 'Learn everything from Bitcoin basics to professional trading strategies. Volatility management and risk control.'; ?>
+                        </p>
+                        <button style="background: linear-gradient(135deg, #f7931a, #ff8c00); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(247, 147, 26, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <?php echo getCurrentLang() == 'tr' ? 'Ücretsiz Eğitime Başla' : 'Start Free Training'; ?>
+                        </button>
                     </div>
                 </div>
 
-                <div class="education-card">
-                    <div class="card-image">
-                        <i class="fas fa-chart-line"></i>
+                <!-- Altcoin Strategy Card -->
+                <div style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'">
+                    <div style="height: 200px; background: linear-gradient(135deg, #627eea, #4f46e5); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 20px; left: 20px; width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
+                        <div style="position: absolute; top: 40px; right: 30px; width: 20px; height: 20px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
+                        <div style="position: absolute; bottom: 30px; left: 40px; width: 25px; height: 25px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                        ⟐
                     </div>
-                    <div class="card-content">
-                        <h3><?php echo getCurrentLang() == 'tr' ? 'Temel Teknik Analiz' : 'Basic Technical Analysis'; ?></h3>
-                        <p><?php echo getCurrentLang() == 'tr' ? 'Grafik okuma, indikatörler ve ticaret sinyalleri hakkında temel bilgileri edinin.' : 'Get basic information about chart reading, indicators and trading signals.'; ?></p>
-                        <button class="card-btn"><?php echo getCurrentLang() == 'tr' ? 'Başla' : 'Start'; ?></button>
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'Altcoin Seçim Stratejisi' : 'Altcoin Selection Strategy'; ?>
+                        </h3>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'Binlerce altcoin arasından kazandıracak projeleri nasıl seçeceğinizi öğrenin. Fundamentals analiz teknikleri.' : 'Learn how to select profitable projects among thousands of altcoins. Fundamental analysis techniques.'; ?>
+                        </p>
+                        <button style="background: linear-gradient(135deg, #627eea, #4f46e5); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(79, 70, 229, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <?php echo getCurrentLang() == 'tr' ? 'Stratejileri Keşfet' : 'Discover Strategies'; ?>
+                        </button>
                     </div>
                 </div>
+
+                <!-- Technical Analysis Card -->
+                <div style="background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 20px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'">
+                    <div style="height: 200px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 30px; left: 30px; right: 30px; height: 2px; background: rgba(255,255,255,0.3);"></div>
+                        <div style="position: absolute; top: 60px; left: 30px; right: 30px; height: 2px; background: rgba(255,255,255,0.2);"></div>
+                        <div style="position: absolute; top: 90px; left: 30px; right: 30px; height: 2px; background: rgba(255,255,255,0.1);"></div>
+                        <div style="position: absolute; bottom: 30px; left: 30px; width: 2px; height: 100px; background: rgba(255,255,255,0.2);"></div>
+                        <div style="position: absolute; bottom: 30px; left: 60px; width: 2px; height: 80px; background: rgba(255,255,255,0.2);"></div>
+                        <div style="position: absolute; bottom: 30px; left: 90px; width: 2px; height: 60px; background: rgba(255,255,255,0.2);"></div>
+                        📈
+                    </div>
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'İleri Teknik Analiz' : 'Advanced Technical Analysis'; ?>
+                        </h3>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+                            <?php echo getCurrentLang() == 'tr' ? 'Candlestick pattern\'ları, indikatörler ve support/resistance seviyeleri ile profesyonel analiz yapın.' : 'Perform professional analysis with candlestick patterns, indicators and support/resistance levels.'; ?>
+                        </p>
+                        <button style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <?php echo getCurrentLang() == 'tr' ? 'Analiz Teknikleri Öğren' : 'Learn Analysis Techniques'; ?>
+                        </button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </section>
