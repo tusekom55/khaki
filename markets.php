@@ -1376,34 +1376,65 @@ function openTradeModal(button) {
     const action = button.dataset.action;
     const type = button.dataset.type; // simple or leverage
     
+    let modalId, symbolElementId, nameElementId, priceElementId, changeElementId;
+    let desktopSymbolField, mobileSymbolField;
+    
+    // Determine which modal to open based on action
+    if (action === 'buy' && type === 'simple') {
+        modalId = 'buyModal';
+        symbolElementId = 'buyModalSymbol';
+        nameElementId = 'buyModalName';
+        priceElementId = 'buyModalPrice';
+        changeElementId = 'buyModalChange';
+        desktopSymbolField = 'buySymbol';
+        mobileSymbolField = 'buySymbolMobile';
+    } else if (action === 'sell' && type === 'simple') {
+        modalId = 'sellModal';
+        symbolElementId = 'sellModalSymbol';
+        nameElementId = 'sellModalName';
+        priceElementId = 'sellModalPrice';
+        changeElementId = 'sellModalChange';
+        desktopSymbolField = 'sellSymbol';
+        mobileSymbolField = 'sellSymbolMobile';
+    } else if (action === 'leverage' && type === 'leverage') {
+        modalId = 'leverageModal';
+        symbolElementId = 'leverageModalSymbol';
+        nameElementId = 'leverageModalName';
+        priceElementId = 'leverageModalPrice';
+        changeElementId = 'leverageModalChange';
+        desktopSymbolField = 'longSymbol';
+        mobileSymbolField = 'longSymbolMobile';
+    }
+    
     // Update modal content
-    document.getElementById('modalSymbol').textContent = symbol;
-    document.getElementById('modalName').textContent = name;
-    document.getElementById('modalPrice').textContent = formatPrice(price);
-    document.getElementById('modalChange').textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
+    document.getElementById(symbolElementId).textContent = symbol;
+    document.getElementById(nameElementId).textContent = name;
+    document.getElementById(priceElementId).textContent = formatPrice(price);
+    document.getElementById(changeElementId).textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
     
     // Set hidden fields for forms - Desktop
-    document.getElementById('buySymbol').value = symbol;
-    if (document.getElementById('sellSymbol')) {
-        document.getElementById('sellSymbol').value = symbol;
-    }
+    document.getElementById(desktopSymbolField).value = symbol;
     
     // Set hidden fields for forms - Mobile  
-    if (document.getElementById('buySymbolMobile')) {
-        document.getElementById('buySymbolMobile').value = symbol;
-    }
-    if (document.getElementById('sellSymbolMobile')) {
-        document.getElementById('sellSymbolMobile').value = symbol;
+    if (document.getElementById(mobileSymbolField)) {
+        document.getElementById(mobileSymbolField).value = symbol;
     }
     
-    // Configure modal based on type
-    configureModalForType(type, action);
+    // For leverage modal, also set short symbol fields
+    if (modalId === 'leverageModal') {
+        if (document.getElementById('shortSymbol')) {
+            document.getElementById('shortSymbol').value = symbol;
+        }
+        if (document.getElementById('shortSymbolMobile')) {
+            document.getElementById('shortSymbolMobile').value = symbol;
+        }
+    }
     
     // Update TradingView widget
-    updateTradingViewWidget(symbol);
+    updateTradingViewWidget(symbol, modalId);
     
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('tradeModal'));
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
     modal.show();
 }
 
@@ -1811,40 +1842,40 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Trading Modal -->
-<div class="modal fade" id="tradeModal" tabindex="-1" aria-labelledby="tradeModalLabel" aria-hidden="true">
+<!-- BUY Modal - Sadece AL İşlemi -->
+<div class="modal fade" id="buyModal" tabindex="-1" aria-labelledby="buyModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-success text-white">
                 <div class="d-flex align-items-center">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center me-3" 
                          style="width: 40px; height: 40px;">
-                        <i class="fas fa-chart-line text-white"></i>
+                        <i class="fas fa-shopping-cart text-success"></i>
                     </div>
                     <div>
-                        <h5 class="modal-title mb-0" id="modalSymbol">AAPL</h5>
-                        <small class="text-muted" id="modalName">Apple Inc.</small>
+                        <h5 class="modal-title mb-0" id="buyModalSymbol">AAPL</h5>
+                        <small class="text-white-50" id="buyModalName">Apple Inc.</small>
                     </div>
                     <div class="ms-auto text-end">
-                        <div class="h5 mb-0" id="modalPrice">$175.50</div>
-                        <small id="modalChange">+1.25%</small>
+                        <div class="h5 mb-0" id="buyModalPrice">$175.50</div>
+                        <small id="buyModalChange">+1.25%</small>
                     </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
                 <!-- Mobile Tab Navigation -->
                 <div class="mobile-modal-tabs" style="display: none;">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item flex-fill" role="presentation">
-                            <button class="nav-link active w-100" id="trading-tab-mobile" data-bs-toggle="tab" 
-                                    data-bs-target="#trading-pane-mobile" type="button" role="tab">
-                                <i class="fas fa-coins me-1"></i>💰 İşlem
+                            <button class="nav-link active w-100" id="buy-trading-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#buy-trading-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-shopping-cart me-1"></i>💰 Satın Al
                             </button>
                         </li>
                         <li class="nav-item flex-fill" role="presentation">
-                            <button class="nav-link w-100" id="chart-tab-mobile" data-bs-toggle="tab" 
-                                    data-bs-target="#chart-pane-mobile" type="button" role="tab">
+                            <button class="nav-link w-100" id="buy-chart-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#buy-chart-pane-mobile" type="button" role="tab">
                                 <i class="fas fa-chart-line me-1"></i>📈 Grafik
                             </button>
                         </li>
@@ -1852,56 +1883,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="tab-content mobile-tab-content">
                         <!-- Mobile Trading Tab -->
-                        <div class="tab-pane fade show active" id="trading-pane-mobile" role="tabpanel">
+                        <div class="tab-pane fade show active" id="buy-trading-pane-mobile" role="tabpanel">
                             <div class="trading-container-mobile">
                                 <div class="p-3">
-                                    <!-- Mobile Trading Form - Basit AL/SAT -->
                                     <?php if (isLoggedIn()): ?>
-                                    
-                                    <!-- AL FORMU -->
-                                    <div class="mb-4">
-                                        <h6><i class="fas fa-shopping-cart me-2 text-success"></i>Satın Al</h6>
-                                        <form method="POST" action="markets.php?group=<?php echo $category; ?>">
-                                            <input type="hidden" name="trade_action" value="buy">
-                                            <input type="hidden" name="symbol" id="buySymbolMobile" value="">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">USD Miktar</label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
-                                                           placeholder="10.00" required>
-                                                    <span class="input-group-text">USD</span>
-                                                </div>
+                                    <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                        <input type="hidden" name="trade_action" value="buy">
+                                        <input type="hidden" name="symbol" id="buySymbolMobile" value="">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Miktar</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                       placeholder="10.00" required>
+                                                <span class="input-group-text">USD</span>
                                             </div>
-                                            
-                                            <button type="submit" class="btn btn-success w-100">
-                                                <i class="fas fa-shopping-cart me-2"></i>SATIN AL
-                                            </button>
-                                        </form>
-                                    </div>
-                                    
-                                    <!-- SAT FORMU -->
-                                    <div class="mb-4">
-                                        <h6><i class="fas fa-hand-holding-usd me-2 text-danger"></i>Sat</h6>
-                                        <form method="POST" action="markets.php?group=<?php echo $category; ?>">
-                                            <input type="hidden" name="trade_action" value="sell">
-                                            <input type="hidden" name="symbol" id="sellSymbolMobile" value="">
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">USD Miktar</label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
-                                                           placeholder="10.00" required>
-                                                    <span class="input-group-text">USD</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <button type="submit" class="btn btn-danger w-100">
-                                                <i class="fas fa-hand-holding-usd me-2"></i>SAT
-                                            </button>
-                                        </form>
-                                    </div>
-                                    
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-shopping-cart me-2"></i>SATIN AL
+                                        </button>
+                                    </form>
                                     <?php else: ?>
                                     <div class="text-center py-4">
                                         <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
@@ -1914,7 +1916,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         
                         <!-- Mobile Chart Tab -->
-                        <div class="tab-pane fade" id="chart-pane-mobile" role="tabpanel">
+                        <div class="tab-pane fade" id="buy-chart-pane-mobile" role="tabpanel">
                             <div class="chart-container-mobile">
                                 <div class="p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1926,8 +1928,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                     </div>
                                     <div style="height: 300px; border-radius: 8px; overflow: hidden;">
-                                        <iframe id="tradingview-widget-mobile" 
-                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                        <iframe id="tradingview-widget-buy-mobile" 
+                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_buy_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
                                                 style="width: 100%; height: 100%; border: none;">
                                         </iframe>
                                     </div>
@@ -1939,175 +1941,413 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 <!-- Desktop Layout -->
                 <div class="desktop-layout row g-0">
+                    <!-- Trading Section -->
+                    <div class="col-md-4 border-end">
+                        <div class="p-3">
+                            <?php if (isLoggedIn()): ?>
+                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                <input type="hidden" name="trade_action" value="buy">
+                                <input type="hidden" name="symbol" id="buySymbol" value="">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">USD Miktar</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                               placeholder="10.00" required>
+                                        <span class="input-group-text">USD</span>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-shopping-cart me-2"></i>SATIN AL
+                                </button>
+                            </form>
+                            <?php else: ?>
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
                     <!-- Chart Section -->
-                    <div class="col-md-8 border-end">
+                    <div class="col-md-8">
                         <div class="p-3">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">Fiyat Grafiği</h6>
-                                <div class="btn-group btn-group-sm" role="group">
+                                <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-secondary">1D</button>
                                     <button type="button" class="btn btn-outline-secondary active">1H</button>
                                     <button type="button" class="btn btn-outline-secondary">15M</button>
                                 </div>
                             </div>
-                            <!-- TradingView Widget -->
                             <div style="height: 400px; border-radius: 8px; overflow: hidden;">
-                                <iframe id="tradingview-widget" 
-                                        src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=AAPL&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                <iframe id="tradingview-widget-buy" 
+                                        src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_buy&symbol=AAPL&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
                                         style="width: 100%; height: 100%; border: none;">
                                 </iframe>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SELL Modal - Sadece SAT İşlemi -->
+<div class="modal fade" id="sellModal" tabindex="-1" aria-labelledby="sellModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px;">
+                        <i class="fas fa-hand-holding-usd text-danger"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="sellModalSymbol">AAPL</h5>
+                        <small class="text-white-50" id="sellModalName">Apple Inc.</small>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <div class="h5 mb-0" id="sellModalPrice">$175.50</div>
+                        <small id="sellModalChange">+1.25%</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Mobile Tab Navigation -->
+                <div class="mobile-modal-tabs" style="display: none;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link active w-100" id="sell-trading-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#sell-trading-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-hand-holding-usd me-1"></i>💰 Sat
+                            </button>
+                        </li>
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link w-100" id="sell-chart-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#sell-chart-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-chart-line me-1"></i>📈 Grafik
+                            </button>
+                        </li>
+                    </ul>
                     
-                    <!-- Trading Section -->
-                    <div class="col-md-4">
-                        <div class="p-3">
-                            <!-- Buy/Sell Tabs -->
-                            <ul class="nav nav-pills nav-fill mb-3" id="tradingTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="buy-tab" data-bs-toggle="pill" data-bs-target="#buy-pane" type="button">
-                                        <i class="fas fa-arrow-up me-1"></i>LONG
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="sell-tab" data-bs-toggle="pill" data-bs-target="#sell-pane" type="button">
-                                        <i class="fas fa-arrow-down me-1"></i>SHORT
-                                    </button>
-                                </li>
-                            </ul>
-                            
-                            <div class="tab-content" id="tradingTabsContent">
-                                <!-- Buy/Long Form -->
-                                <div class="tab-pane fade show active" id="buy-pane" role="tabpanel">
-                                    <?php if (isset($success)): ?>
-                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                    <?php endif; ?>
-                                    <?php if (isset($error)): ?>
-                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                        <i class="fas fa-exclamation-triangle me-2"></i><?php echo $error; ?>
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                    <?php endif; ?>
-                                    
+                    <div class="tab-content mobile-tab-content">
+                        <!-- Mobile Trading Tab -->
+                        <div class="tab-pane fade show active" id="sell-trading-pane-mobile" role="tabpanel">
+                            <div class="trading-container-mobile">
+                                <div class="p-3">
                                     <?php if (isLoggedIn()): ?>
-                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>">
-                                        <input type="hidden" name="trade_action" value="buy">
-                                        <input type="hidden" name="symbol" id="buySymbol" value="">
+                                    <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                        <input type="hidden" name="trade_action" value="sell">
+                                        <input type="hidden" name="symbol" id="sellSymbolMobile" value="">
                                         
                                         <div class="mb-3">
                                             <label class="form-label">USD Miktar</label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="usd_amount" name="usd_amount" step="0.01" min="0.01" 
-                                                       placeholder="10.00" oninput="calculateSimpleTrade()" required>
+                                                <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                       placeholder="10.00" required>
                                                 <span class="input-group-text">USD</span>
                                             </div>
-                                            <small class="text-muted">Satın almak istediğiniz USD tutarı</small>
                                         </div>
                                         
-                                        <div class="mb-3 leverage-control">
-                                            <label class="form-label">Kaldıraç <span id="leverageDisplay" class="badge bg-primary">1x</span></label>
-                                            <input type="range" class="form-range" id="leverage" name="leverage" min="1" max="100" value="1" 
-                                                   oninput="calculateTrade()">
-                                            <div class="d-flex justify-content-between">
-                                                <small class="text-muted">1x</small>
-                                                <small class="text-muted">100x</small>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="row mb-3 advanced-control">
-                                            <div class="col-6">
-                                                <label class="form-label">Stop Loss</label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
-                                                    <span class="input-group-text">$</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="form-label">Take Profit</label>
-                                                <div class="input-group">
-                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
-                                                    <span class="input-group-text">$</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Trade Summary -->
-                                        <div class="card border-0 bg-light mb-3">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted">Toplam Değer:</small>
-                                                    <small class="fw-bold" id="totalValue">$0.00</small>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-1" id="lotEquivalent" style="display: none;">
-                                                    <small class="text-muted">Lot Miktarı:</small>
-                                                    <small class="fw-bold" id="lotAmount">0.00 Lot</small>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted calculation-label">Gerekli Margin:</small>
-                                                    <small class="fw-bold" id="requiredMargin">$0.00</small>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <small class="text-muted">İşlem Ücreti:</small>
-                                                    <small class="fw-bold" id="tradingFee">$0.00</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Compact Exchange Rate Info for TL Mode -->
-                                        <div class="compact-exchange-info mb-3" id="exchangeInfo" style="display: none !important;">
-                                            <span class="badge bg-info">
-                                                💱 1 USD = <?php echo formatTurkishNumber($usd_try_rate, 2); ?> TL
-                                            </span>
-                                            <small class="text-muted ms-2">TL ile ödeme</small>
-                                        </div>
-                                        
-                                        <button type="submit" class="btn btn-success w-100">
-                                            <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-hand-holding-usd me-2"></i>SAT
                                         </button>
                                     </form>
                                     <?php else: ?>
                                     <div class="text-center py-4">
                                         <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted mb-3">
-                                            <?php echo getCurrentLang() == 'tr' ? 'İşlem yapmak için giriş yapmanız gerekiyor' : 'Please login to trade'; ?>
-                                        </p>
-                                        <a href="login.php" class="btn btn-primary">
-                                            <i class="fas fa-sign-in-alt me-2"></i><?php echo getCurrentLang() == 'tr' ? 'Giriş Yap' : 'Login'; ?>
-                                        </a>
+                                        <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                        <a href="login.php" class="btn btn-primary">Giriş Yap</a>
                                     </div>
                                     <?php endif; ?>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Chart Tab -->
+                        <div class="tab-pane fade" id="sell-chart-pane-mobile" role="tabpanel">
+                            <div class="chart-container-mobile">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary">1D</button>
+                                            <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                            <button type="button" class="btn btn-outline-secondary">15M</button>
+                                        </div>
+                                    </div>
+                                    <div style="height: 300px; border-radius: 8px; overflow: hidden;">
+                                        <iframe id="tradingview-widget-sell-mobile" 
+                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_sell_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                                style="width: 100%; height: 100%; border: none;">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Desktop Layout -->
+                <div class="desktop-layout row g-0">
+                    <!-- Trading Section -->
+                    <div class="col-md-4 border-end">
+                        <div class="p-3">
+                            <?php if (isLoggedIn()): ?>
+                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                <input type="hidden" name="trade_action" value="sell">
+                                <input type="hidden" name="symbol" id="sellSymbol" value="">
                                 
-                                <!-- Sell/Short Form -->
-                                <div class="tab-pane fade" id="sell-pane" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label">USD Miktar</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                               placeholder="10.00" required>
+                                        <span class="input-group-text">USD</span>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="fas fa-hand-holding-usd me-2"></i>SAT
+                                </button>
+                            </form>
+                            <?php else: ?>
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Section -->
+                    <div class="col-md-8">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary">1D</button>
+                                    <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                    <button type="button" class="btn btn-outline-secondary">15M</button>
+                                </div>
+                            </div>
+                            <div style="height: 400px; border-radius: 8px; overflow: hidden;">
+                                <iframe id="tradingview-widget-sell" 
+                                        src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_sell&symbol=AAPL&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                        style="width: 100%; height: 100%; border: none;">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LEVERAGE Modal - LONG/SHORT İşlemi -->
+<div class="modal fade" id="leverageModal" tabindex="-1" aria-labelledby="leverageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px;">
+                        <i class="fas fa-bolt text-warning"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="leverageModalSymbol">AAPL</h5>
+                        <small class="text-dark" id="leverageModalName">Apple Inc.</small>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <div class="h5 mb-0" id="leverageModalPrice">$175.50</div>
+                        <small id="leverageModalChange">+1.25%</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Mobile Tab Navigation -->
+                <div class="mobile-modal-tabs" style="display: none;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link active w-100" id="leverage-trading-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#leverage-trading-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-bolt me-1"></i>💰 Kaldıraç
+                            </button>
+                        </li>
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link w-100" id="leverage-chart-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#leverage-chart-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-chart-line me-1"></i>📈 Grafik
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mobile-tab-content">
+                        <!-- Mobile Trading Tab -->
+                        <div class="tab-pane fade show active" id="leverage-trading-pane-mobile" role="tabpanel">
+                            <div class="trading-container-mobile">
+                                <div class="p-3">
                                     <?php if (isLoggedIn()): ?>
-                                    <form id="sellForm" method="POST" action="">
-                                        <input type="hidden" name="modal_action" value="sell">
-                                        <input type="hidden" name="symbol" id="sellSymbol" value="">
-                                        <input type="hidden" name="trade_type" id="sellTradeType" value="">
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <label class="form-label mb-0">Miktar</label>
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountLotSell" value="lot">
-                                                    <label class="btn btn-outline-primary" for="amountLotSell">Lot</label>
-                                                    
-                                                    <input type="radio" class="btn-check" name="amountTypeSell" id="amountUSDSell" value="usd" checked>
-                                                    <label class="btn btn-outline-primary" for="amountUSDSell">USD</label>
+                                    <!-- LONG/SHORT Tab'ları -->
+                                    <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="long-tab-mobile" data-bs-toggle="pill" 
+                                                    data-bs-target="#long-pane-mobile" type="button">
+                                                <i class="fas fa-arrow-up me-1"></i>LONG
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="short-tab-mobile" data-bs-toggle="pill" 
+                                                    data-bs-target="#short-pane-mobile" type="button">
+                                                <i class="fas fa-arrow-down me-1"></i>SHORT
+                                            </button>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="tab-content">
+                                        <!-- LONG Form -->
+                                        <div class="tab-pane fade show active" id="long-pane-mobile" role="tabpanel">
+                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                                <input type="hidden" name="trade_action" value="buy">
+                                                <input type="hidden" name="symbol" id="longSymbolMobile" value="">
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">USD Miktar</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                               placeholder="10.00" required>
+                                                        <span class="input-group-text">USD</span>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
+                                                    <input type="range" class="form-range" min="1" max="100" value="1">
+                                                    <div class="d-flex justify-content-between">
+                                                        <small class="text-muted">1x</small>
+                                                        <small class="text-muted">100x</small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
+                                                </button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- SHORT Form -->
+                                        <div class="tab-pane fade" id="short-pane-mobile" role="tabpanel">
+                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                                <input type="hidden" name="trade_action" value="sell">
+                                                <input type="hidden" name="symbol" id="shortSymbolMobile" value="">
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">USD Miktar</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                               placeholder="10.00" required>
+                                                        <span class="input-group-text">USD</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
+                                                    <input type="range" class="form-range" min="1" max="100" value="1">
+                                                    <div class="d-flex justify-content-between">
+                                                        <small class="text-muted">1x</small>
+                                                        <small class="text-muted">100x</small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-danger w-100">
+                                                    <i class="fas fa-arrow-down me-2"></i>SHORT POZISYON AÇ
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                        <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Chart Tab -->
+                        <div class="tab-pane fade" id="leverage-chart-pane-mobile" role="tabpanel">
+                            <div class="chart-container-mobile">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary">1D</button>
+                                            <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                            <button type="button" class="btn btn-outline-secondary">15M</button>
+                                        </div>
+                                    </div>
+                                    <div style="height: 300px; border-radius: 8px; overflow: hidden;">
+                                        <iframe id="tradingview-widget-leverage-mobile" 
+                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_leverage_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                                style="width: 100%; height: 100%; border: none;">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Desktop Layout -->
+                <div class="desktop-layout row g-0">
+                    <!-- Trading Section -->
+                    <div class="col-md-4 border-end">
+                        <div class="p-3">
+                            <?php if (isLoggedIn()): ?>
+                            <!-- LONG/SHORT Tab'ları -->
+                            <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="long-tab" data-bs-toggle="pill" 
+                                            data-bs-target="#long-pane" type="button">
+                                        <i class="fas fa-arrow-up me-1"></i>LONG
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="short-tab" data-bs-toggle="pill" 
+                                            data-bs-target="#short-pane" type="button">
+                                        <i class="fas fa-arrow-down me-1"></i>SHORT
+                                    </button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content">
+                                <!-- LONG Form -->
+                                <div class="tab-pane fade show active" id="long-pane" role="tabpanel">
+                                    <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                        <input type="hidden" name="trade_action" value="buy">
+                                        <input type="hidden" name="symbol" id="longSymbol" value="">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Miktar</label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="amountSell" step="0.01" min="0.01" 
-                                                       placeholder="0.00" oninput="calculateTradeSell()">
-                                                <span class="input-group-text" id="amountUnitSell">Lot</span>
+                                                <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                       placeholder="10.00" required>
+                                                <span class="input-group-text">USD</span>
                                             </div>
                                         </div>
                                         
-                                        <div class="mb-3 leverage-control">
+                                        <div class="mb-3">
                                             <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
                                             <input type="range" class="form-range" min="1" max="100" value="1">
                                             <div class="d-flex justify-content-between">
@@ -2116,7 +2356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </div>
                                         </div>
                                         
-                                        <div class="row mb-3 advanced-control">
+                                        <div class="row mb-3">
                                             <div class="col-6">
                                                 <label class="form-label">Stop Loss</label>
                                                 <div class="input-group">
@@ -2133,20 +2373,49 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </div>
                                         </div>
                                         
-                                        <!-- Trade Summary -->
-                                        <div class="card border-0 bg-light mb-3">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted">Toplam Değer:</small>
-                                                    <small class="fw-bold">$0.00</small>
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- SHORT Form -->
+                                <div class="tab-pane fade" id="short-pane" role="tabpanel">
+                                    <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                        <input type="hidden" name="trade_action" value="sell">
+                                        <input type="hidden" name="symbol" id="shortSymbol" value="">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Miktar</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                       placeholder="10.00" required>
+                                                <span class="input-group-text">USD</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Kaldıraç <span class="badge bg-primary">1x</span></label>
+                                            <input type="range" class="form-range" min="1" max="100" value="1">
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">1x</small>
+                                                <small class="text-muted">100x</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label class="form-label">Stop Loss</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
                                                 </div>
-                                                <div class="d-flex justify-content-between mb-1">
-                                                    <small class="text-muted calculation-label">Gerekli Margin:</small>
-                                                    <small class="fw-bold">$0.00</small>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <small class="text-muted">İşlem Ücreti:</small>
-                                                    <small class="fw-bold">$0.00</small>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Take Profit</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" step="0.01" placeholder="0.00">
+                                                    <span class="input-group-text">$</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2155,18 +2424,34 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <i class="fas fa-arrow-down me-2"></i>SHORT POZISYON AÇ
                                         </button>
                                     </form>
-                                    <?php else: ?>
-                                    <div class="text-center py-4">
-                                        <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted mb-3">
-                                            <?php echo getCurrentLang() == 'tr' ? 'İşlem yapmak için giriş yapmanız gerekiyor' : 'Please login to trade'; ?>
-                                        </p>
-                                        <a href="login.php" class="btn btn-primary">
-                                            <i class="fas fa-sign-in-alt me-2"></i><?php echo getCurrentLang() == 'tr' ? 'Giriş Yap' : 'Login'; ?>
-                                        </a>
-                                    </div>
-                                    <?php endif; ?>
                                 </div>
+                            </div>
+                            <?php else: ?>
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Section -->
+                    <div class="col-md-8">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary">1D</button>
+                                    <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                    <button type="button" class="btn btn-outline-secondary">15M</button>
+                                </div>
+                            </div>
+                            <div style="height: 400px; border-radius: 8px; overflow: hidden;">
+                                <iframe id="tradingview-widget-leverage" 
+                                        src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_leverage&symbol=AAPL&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                        style="width: 100%; height: 100%; border: none;">
+                                </iframe>
                             </div>
                         </div>
                     </div>
