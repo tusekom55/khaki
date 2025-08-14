@@ -321,50 +321,15 @@ foreach($_SESSION as $session_key => $session_value) {
         </div>
     </div>
 
-    <!-- Mobile: Sticky Category Dropdown -->
-    <div class="mobile-category-header sticky-top" style="display: none;">
-        <div class="mobile-category-selector">
-            <div class="category-selector-header">
-                <i class="fas fa-layer-group me-2 text-primary"></i>
-                <span class="fw-bold">Borsa Kategorisi Seç</span>
-            </div>
-            <div class="dropdown w-100">
-                <button class="btn btn-outline-primary dropdown-toggle w-100 category-dropdown-btn" type="button" 
-                        id="mobileCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="d-flex align-items-center">
-                        <i class="<?php echo $icons[$category] ?? 'fas fa-chart-line'; ?> me-2"></i>
-                        <div class="text-start">
-                            <div class="fw-bold"><?php echo $categories[$category] ?? 'Kategori Seçin'; ?></div>
-                            <small class="text-muted">Piyasa kategorisini değiştir</small>
-                        </div>
-                    </div>
-                </button>
-                <ul class="dropdown-menu w-100 category-dropdown-menu" aria-labelledby="mobileCategoryDropdown">
-                    <li>
-                        <div class="dropdown-header">
-                            <i class="fas fa-chart-bar me-2"></i>Mevcut Piyasa Kategorileri
-                        </div>
-                    </li>
-                    <?php foreach ($categories as $cat_key => $cat_name): ?>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center <?php echo $category == $cat_key ? 'active' : ''; ?>" 
-                           href="?group=<?php echo $cat_key; ?>">
-                            <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?> me-3"></i>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold"><?php echo $cat_name; ?></div>
-                                <small class="text-muted"><?php echo $descriptions[$cat_key] ?? ''; ?></small>
-                            </div>
-                            <?php if ($category == $cat_key): ?>
-                            <div class="ms-2">
-                                <i class="fas fa-check text-success"></i>
-                                <small class="text-success ms-1">Aktif</small>
-                            </div>
-                            <?php endif; ?>
-                        </a>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
+    <!-- Mobile: Horizontal Scroll Category Tabs -->
+    <div class="mobile-category-tabs sticky-top" style="display: none;">
+        <div class="category-tabs-container">
+            <?php foreach ($categories as $cat_key => $cat_name): ?>
+            <a href="?group=<?php echo $cat_key; ?>" class="category-tab <?php echo $category == $cat_key ? 'active' : ''; ?>">
+                <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?>"></i>
+                <span><?php echo $cat_name; ?></span>
+            </a>
+            <?php endforeach; ?>
         </div>
     </div>
     
@@ -877,9 +842,99 @@ foreach($_SESSION as $session_key => $session_value) {
 
 /* Mobile Optimization Styles */
 @media (max-width: 768px) {
-    /* Hide desktop categories, show mobile dropdown */
+    /* Hide desktop categories, show mobile tabs */
     .desktop-categories {
         display: none !important;
+    }
+    
+    .mobile-category-tabs {
+        display: block !important;
+        background: white;
+        z-index: 1020;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .category-tabs-container {
+        display: flex;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.5rem;
+        padding: 0 1rem 0.5rem 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: #dee2e6 transparent;
+    }
+    
+    .category-tabs-container::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .category-tabs-container::-webkit-scrollbar-track {
+        background: #f8f9fa;
+        border-radius: 2px;
+    }
+    
+    .category-tabs-container::-webkit-scrollbar-thumb {
+        background: #dee2e6;
+        border-radius: 2px;
+    }
+    
+    .category-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 70px;
+        height: 70px;
+        padding: 0.5rem 0.25rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #6c757d;
+        background: white;
+        border: 1px solid #e9ecef;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .category-tab i {
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+        transition: transform 0.15s ease;
+    }
+    
+    .category-tab span {
+        line-height: 1;
+        font-size: 0.65rem;
+        max-width: 60px;
+        word-wrap: break-word;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .category-tab:hover {
+        color: #495057;
+        background: #f8f9fa;
+        border-color: #dee2e6;
+    }
+    
+    .category-tab.active {
+        color: white;
+        background: #007bff;
+        border-color: #007bff;
+        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.4);
+    }
+    
+    .category-tab.active i {
+        transform: scale(1.05);
     }
     
     .mobile-category-header {
