@@ -61,6 +61,41 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
         $debug_info[] = "TL Balance: " . getUserBalance($_SESSION['user_id'], 'tl');
         $debug_info[] = "USD Balance: " . getUserBalance($_SESSION['user_id'], 'usd');
         
+        // Test each function step by step
+        $step_results = [];
+        
+        // Step 1: Test database connection
+        $database = new Database();
+        $db = $database->getConnection();
+        $step_results['database'] = $db ? '✅ SUCCESS' : '❌ FAILED';
+        
+        // Step 2: Test getTradingCurrency
+        $trading_currency = getTradingCurrency();
+        $step_results['trading_currency'] = $trading_currency ? "✅ SUCCESS ($trading_currency)" : '❌ FAILED';
+        
+        // Step 3: Test getUserBalance
+        if ($trading_currency == 2) { // USD Mode
+            $usd_balance = getUserBalance($_SESSION['user_id'], 'usd');
+            $fee_usd = $usd_amount * 0.001;
+            $total_usd = $usd_amount + $fee_usd;
+            $step_results['balance_check'] = $usd_balance >= $total_usd ? "✅ YETER ($usd_balance >= $total_usd)" : "❌ YETMİYOR ($usd_balance < $total_usd)";
+            
+            // Step 4: Test updateUserBalance function
+            if ($usd_balance >= $total_usd) {
+                // Don't actually update, just test the function exists and is callable
+                $step_results['update_function'] = function_exists('updateUserBalance') ? '✅ FUNCTION EXISTS' : '❌ FUNCTION MISSING';
+                
+                // Step 5: Test database transaction
+                try {
+                    $transaction_test = $db->beginTransaction();
+                    $step_results['begin_transaction'] = $transaction_test ? '✅ SUCCESS' : '❌ FAILED';
+                    $db->rollback(); // Rollback test transaction
+                } catch (Exception $e) {
+                    $step_results['begin_transaction'] = '❌ ERROR: ' . $e->getMessage();
+                }
+            }
+        }
+        
         // Execute simple trade
         $trade_result = executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price);
         
@@ -87,9 +122,30 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
             }
             echo "</div>";
             
+            // NEW: Show step by step test results
+            echo "<div style='background: #1a365d; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+            echo "<h3 style='color: #63b3ed;'>🧪 Step-by-Step Test Results:</h3>";
+            foreach($step_results as $step => $result) {
+                echo "<strong>$step:</strong> $result<br>";
+            }
+            echo "</div>";
+            
             // Hesaplama kontrolü
             $trading_currency = getTradingCurrency();
-            if ($trading_currency == 1) {
+            if ($trading_currency == 2) { // USD Mode
+                $fee_usd = $usd_amount * 0.001;
+                $total_usd = $usd_amount + $fee_usd;
+                $usd_balance = getUserBalance($_SESSION['user_id'], 'usd');
+                
+                echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+                echo "<h3 style='color: #68d391;'>💰 USD Mode Hesaplama:</h3>";
+                echo "USD Amount: " . $usd_amount . "<br>";
+                echo "Fee USD: " . $fee_usd . "<br>";
+                echo "Total USD: " . $total_usd . "<br>";
+                echo "USD Balance: " . $usd_balance . "<br>";
+                echo "Balance Check: " . ($usd_balance >= $total_usd ? "✅ YETER" : "❌ YETMİYOR") . "<br>";
+                echo "</div>";
+            } else {
                 $usd_to_tl_rate = getUSDTRYRate();
                 $tl_amount = $usd_amount * $usd_to_tl_rate;
                 $fee_tl = $tl_amount * 0.001;
@@ -108,18 +164,18 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
             }
             
             echo "<div style='background: #1a202c; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-            echo "<h3 style='color: #fc8181;'>🎯 Muhtemel Sorunlar:</h3>";
-            echo "1. Database connection problemi<br>";
-            echo "2. Transaction başlatma hatası<br>";
-            echo "3. Balance update fonksiyonu çalışmıyor<br>";
-            echo "4. SQL insert hatası<br>";
-            echo "5. Commit işlemi başarısız<br>";
+            echo "<h3 style='color: #fc8181;'>🎯 executeSimpleTrade() İçindeki Adımlar:</h3>";
+            echo "1. Database connection test: " . ($step_results['database'] ?? 'Not tested') . "<br>";
+            echo "2. Trading currency check: " . ($step_results['trading_currency'] ?? 'Not tested') . "<br>";
+            echo "3. Balance validation: " . ($step_results['balance_check'] ?? 'Not tested') . "<br>";
+            echo "4. Update function check: " . ($step_results['update_function'] ?? 'Not tested') . "<br>";
+            echo "5. Transaction test: " . ($step_results['begin_transaction'] ?? 'Not tested') . "<br>";
             echo "</div>";
             
             echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-            echo "<h3 style='color: #ed8936;'>🔧 Çözüm:</h3>";
-            echo "Bu debug bilgileriyle sorunu tespit edebiliriz.<br>";
-            echo "Function'ların tek tek test edilmesi gerekiyor.<br>";
+            echo "<h3 style='color: #ed8936;'>🔧 Sonraki Adım:</h3>";
+            echo "Yukarıdaki test sonuçlarına bakarak hangi adımda fail olduğunu görebiliriz.<br>";
+            echo "executeSimpleTrade() fonksiyonu bu adımlardan birinde false dönüyor.<br>";
             echo "</div>";
             
             echo "</div>";
