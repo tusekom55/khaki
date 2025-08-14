@@ -1424,25 +1424,42 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
                 // Check TL balance
                 $tl_balance = getUserBalance($user_id, 'tl');
                 if ($tl_balance < $total_tl) {
-                    throw new Exception('Insufficient TL balance');
+                    $db->rollback();
+                    return false;
                 }
                 
                 // Deduct TL from user balance
-                updateUserBalance($user_id, 'tl', $total_tl, 'subtract');
+                $balance_update = updateUserBalance($user_id, 'tl', $total_tl, 'subtract');
+                if (!$balance_update) {
+                    $db->rollback();
+                    return false;
+                }
                 
                 // Record transaction in TL
                 $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                if (!$transaction_insert) {
+                    $db->rollback();
+                    return false;
+                }
                 
             } else { // sell
                 // For sell operations, we assume user has the asset
                 // Simplified: just add TL to balance (minus fee)
-                updateUserBalance($user_id, 'tl', $tl_amount - $fee_tl, 'add');
+                $balance_update = updateUserBalance($user_id, 'tl', $tl_amount - $fee_tl, 'add');
+                if (!$balance_update) {
+                    $db->rollback();
+                    return false;
+                }
                 
                 $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                if (!$transaction_insert) {
+                    $db->rollback();
+                    return false;
+                }
             }
             
         } else { // USD Mode
@@ -1453,32 +1470,50 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
                 // Check USD balance
                 $usd_balance = getUserBalance($user_id, 'usd');
                 if ($usd_balance < $total_usd) {
-                    throw new Exception('Insufficient USD balance');
+                    $db->rollback();
+                    return false;
                 }
                 
                 // Deduct USD from user balance
-                updateUserBalance($user_id, 'usd', $total_usd, 'subtract');
+                $balance_update = updateUserBalance($user_id, 'usd', $total_usd, 'subtract');
+                if (!$balance_update) {
+                    $db->rollback();
+                    return false;
+                }
                 
                 // Record transaction in USD
                 $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                if (!$transaction_insert) {
+                    $db->rollback();
+                    return false;
+                }
                 
             } else { // sell
                 // Add USD to balance (minus fee)
-                updateUserBalance($user_id, 'usd', $usd_amount - $fee_usd, 'add');
+                $balance_update = updateUserBalance($user_id, 'usd', $usd_amount - $fee_usd, 'add');
+                if (!$balance_update) {
+                    $db->rollback();
+                    return false;
+                }
                 
                 $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                if (!$transaction_insert) {
+                    $db->rollback();
+                    return false;
+                }
             }
         }
         
-        $db->commit();
-        return true;
+        $commit_result = $db->commit();
+        return $commit_result;
         
     } catch (Exception $e) {
         $db->rollback();
+        error_log("executeSimpleTrade error: " . $e->getMessage());
         return false;
     }
 }
