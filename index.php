@@ -631,8 +631,38 @@ $markets = getMarketData('us_stocks', 6);
     
     <!-- Inline JavaScript for Slider -->
     <script>
-        // Hero Slider - Inline to ensure it works
+        // Manual navigation click handlers - Force fix
         document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to all navbar links
+            const navLinks = document.querySelectorAll('.navbar a');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                });
+            });
+            
+            // Add click handlers to buttons
+            const navButtons = document.querySelectorAll('.navbar .btn');
+            navButtons.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                });
+            });
+            
+        // Initialize slider
+        initSlider();
+        });
+        
+        // Hero Slider function
+        function initSlider() {
             console.log('DOM loaded, initializing slider...');
             
             const slides = document.querySelectorAll('.slide');
