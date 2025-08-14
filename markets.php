@@ -52,10 +52,16 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
         
         // Execute simple trade
         if (executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price)) {
+            // Clear any existing error messages first
+            unset($_SESSION['trade_error']);
+            
             $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
             header('Location: markets.php?group=' . $category);
             exit();
         } else {
+            // Clear any existing success messages first
+            unset($_SESSION['trade_success']);
+            
             $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
             header('Location: markets.php?group=' . $category);
             exit();
