@@ -50,12 +50,25 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
     if ($current_market && $usd_amount > 0) {
         $usd_price = (float)$current_market['price'];
         
+        // Debug: Check values before trade
+        error_log("TRADE ATTEMPT DEBUG:");
+        error_log("User ID: " . $_SESSION['user_id']);
+        error_log("Symbol: " . $symbol);
+        error_log("Action: " . $trade_action);
+        error_log("USD Amount: " . $usd_amount);
+        error_log("USD Price: " . $usd_price);
+        error_log("Trading Currency: " . getTradingCurrency());
+        error_log("TL Balance: " . getUserBalance($_SESSION['user_id'], 'tl'));
+        error_log("USD Balance: " . getUserBalance($_SESSION['user_id'], 'usd'));
+        
         // Execute simple trade
         if (executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price)) {
+            error_log("TRADE SUCCESS: executeSimpleTrade returned true");
             $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
             header('Location: markets.php?group=' . $category);
             exit();
         } else {
+            error_log("TRADE FAILED: executeSimpleTrade returned false");
             $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
             header('Location: markets.php?group=' . $category);
             exit();
