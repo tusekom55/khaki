@@ -807,15 +807,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 </div>
                                             </div>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="amount" step="0.01" min="0.01" 
-                                                       placeholder="0.00" oninput="calculateTrade()">
+                                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" 
+                                                       placeholder="0.00" oninput="calculateTrade()" required>
                                                 <span class="input-group-text" id="amountUnit">USD</span>
                                             </div>
                                         </div>
                                         
                                         <div class="mb-3 leverage-control">
                                             <label class="form-label">Kaldıraç <span id="leverageDisplay" class="badge bg-primary">1x</span></label>
-                                            <input type="range" class="form-range" id="leverage" min="1" max="100" value="1" 
+                                            <input type="range" class="form-range" id="leverage" name="leverage" min="1" max="100" value="1" 
                                                    oninput="calculateTrade()">
                                             <div class="d-flex justify-content-between">
                                                 <small class="text-muted">1x</small>
