@@ -1235,7 +1235,7 @@ function getTradingBalance($user_id) {
 /**
  * Updated execute trade function with parametric currency support
  */
-function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd) {
+function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd, $leverage = 1, $is_leverage_trade = false) {
     $database = new Database();
     $db = $database->getConnection();
     

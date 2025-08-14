@@ -13,6 +13,62 @@ if (!in_array($category, $valid_categories)) {
 // Get market data
 $markets = getMarketData($category, 50);
 
+// Get trading currency settings for modals
+$trading_currency = getTradingCurrency();
+$currency_field = getCurrencyField($trading_currency);
+$currency_symbol = getCurrencySymbol($trading_currency);
+$usd_try_rate = getUSDTRYRate();
+
+// Get user balances if logged in
+$user_balances = [];
+if (isLoggedIn()) {
+    $user_id = $_SESSION['user_id'];
+    $user_balances = [
+        'primary' => getUserBalance($user_id, $currency_field),
+        'tl' => getUserBalance($user_id, 'tl'),
+        'usd' => getUserBalance($user_id, 'usd'),
+        'btc' => getUserBalance($user_id, 'btc'),
+        'eth' => getUserBalance($user_id, 'eth')
+    ];
+}
+
+// Handle modal trading form submission
+if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
+    $modal_action = $_POST['modal_action']; // 'buy', 'sell', or 'leverage'
+    $symbol = $_POST['symbol'] ?? '';
+    $amount = (float)($_POST['amount'] ?? 0);
+    $leverage = (int)($_POST['leverage'] ?? 1);
+    $is_leverage_trade = ($_POST['trade_type'] ?? '') === 'leverage';
+    
+    // Get market data for this symbol
+    $current_market = null;
+    foreach ($markets as $market) {
+        if ($market['symbol'] === $symbol) {
+            $current_market = $market;
+            break;
+        }
+    }
+    
+    if ($current_market && $amount > 0) {
+        $price_usd = (float)$current_market['price'];
+        
+        // Execute trade using parametric system
+        if (executeTradeParametric($_SESSION['user_id'], $symbol, $modal_action, $amount, $price_usd, $leverage, $is_leverage_trade)) {
+            $success = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
+            // Refresh user balances
+            $user_balances = [
+                'primary' => getUserBalance($_SESSION['user_id'], $currency_field),
+                'tl' => getUserBalance($_SESSION['user_id'], 'tl'),
+                'usd' => getUserBalance($_SESSION['user_id'], 'usd'),
+                'btc' => getUserBalance($_SESSION['user_id'], 'btc'),
+                'eth' => getUserBalance($_SESSION['user_id'], 'eth')
+            ];
+        } else {
+            $error = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
+        }
+    }
+}
+
 // Update market data if it's been more than 10 minutes (to save API quota)
 $database = new Database();
 $db = $database->getConnection();
@@ -283,6 +339,11 @@ include 'includes/header.php';
 </div>
 
 <script>
+// Parametric system constants
+const TRADING_CURRENCY = <?php echo $trading_currency; ?>; // 1=TL, 2=USD
+const CURRENCY_SYMBOL = '<?php echo $currency_symbol; ?>';
+const USD_TRY_RATE = <?php echo $usd_try_rate; ?>;
+
 // Search functionality
 document.getElementById('marketSearch').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
@@ -390,6 +451,12 @@ function openTradeModal(button) {
     document.getElementById('modalName').textContent = name;
     document.getElementById('modalPrice').textContent = formatPrice(price);
     document.getElementById('modalChange').textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
+    
+    // Set hidden fields for forms
+    document.getElementById('buySymbol').value = symbol;
+    document.getElementById('sellSymbol').value = symbol;
+    document.getElementById('buyTradeType').value = type;
+    document.getElementById('sellTradeType').value = type;
     
     // Configure modal based on type
     configureModalForType(type, action);
@@ -533,33 +600,55 @@ function updateTradingViewWidget(symbol) {
 function calculateTrade() {
     const amount = parseFloat(document.getElementById('amount').value) || 0;
     const leverage = parseInt(document.getElementById('leverage').value) || 1;
-    const price = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
+    const priceUSD = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
     const amountType = document.querySelector('input[name="amountType"]:checked').value;
     
-    let total, lotAmount;
+    let totalUSD, lotAmount;
+    
+    // Calculate based on amount type
     if (amountType === 'usd') {
-        // USD ile işlem - lot miktarını hesapla
-        total = amount;
-        lotAmount = amount / price;
+        totalUSD = amount;
+        lotAmount = amount / priceUSD;
     } else {
         // Lot ile işlem
-        total = amount * price;
+        totalUSD = amount * priceUSD;
         lotAmount = amount;
     }
     
-    // Her durumda lot miktarını göster
+    // Convert to display currency based on trading currency setting
+    let displayTotal, displayMargin, displayFee, currencyLabel;
+    
+    if (TRADING_CURRENCY === 1) { // TL mode
+        displayTotal = totalUSD * USD_TRY_RATE;
+        displayMargin = (totalUSD / leverage) * USD_TRY_RATE;
+        displayFee = (totalUSD * 0.001) * USD_TRY_RATE;
+        currencyLabel = 'TL';
+    } else { // USD mode
+        displayTotal = totalUSD;
+        displayMargin = totalUSD / leverage;
+        displayFee = totalUSD * 0.001;
+        currencyLabel = 'USD';
+    }
+    
+    // Update display
     document.getElementById('lotEquivalent').style.display = 'flex';
     document.getElementById('lotAmount').textContent = formatPrice(lotAmount) + ' Lot';
     
-    const margin = total / leverage;
-    const fee = total * 0.001; // 0.1% fee
-    
-    document.getElementById('totalValue').textContent = formatPrice(total) + ' USD';
-    document.getElementById('requiredMargin').textContent = formatPrice(margin) + ' USD';
-    document.getElementById('tradingFee').textContent = formatPrice(fee) + ' USD';
+    document.getElementById('totalValue').textContent = formatPrice(displayTotal) + ' ' + currencyLabel;
+    document.getElementById('requiredMargin').textContent = formatPrice(displayMargin) + ' ' + currencyLabel;
+    document.getElementById('tradingFee').textContent = formatPrice(displayFee) + ' ' + currencyLabel;
     
     // Update leverage display
     document.getElementById('leverageDisplay').textContent = leverage + 'x';
+    
+    // Show exchange rate info for TL mode
+    if (TRADING_CURRENCY === 1) {
+        const exchangeInfo = document.getElementById('exchangeInfo');
+        if (exchangeInfo) {
+            exchangeInfo.style.display = 'block';
+            exchangeInfo.textContent = `1 USD = ${formatTurkishNumber(USD_TRY_RATE, 4)} TL`;
+        }
+    }
 }
 
 function calculateTradeSell() {
@@ -679,7 +768,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="tab-content" id="tradingTabsContent">
                                 <!-- Buy/Long Form -->
                                 <div class="tab-pane fade show active" id="buy-pane" role="tabpanel">
-                                    <form id="buyForm">
+                                    <?php if (isset($success)): ?>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i><?php echo $success; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if (isset($error)): ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i><?php echo $error; ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (isLoggedIn()): ?>
+                                    <form id="buyForm" method="POST" action="">
+                                        <input type="hidden" name="modal_action" value="buy">
+                                        <input type="hidden" name="symbol" id="buySymbol" value="">
+                                        <input type="hidden" name="trade_type" id="buyTradeType" value="">
                                         <div class="mb-3">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <label class="form-label mb-0">Miktar</label>
@@ -751,11 +857,26 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <i class="fas fa-arrow-up me-2"></i>LONG POZISYON AÇ
                                         </button>
                                     </form>
+                                    <?php else: ?>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-3">
+                                            <?php echo getCurrentLang() == 'tr' ? 'İşlem yapmak için giriş yapmanız gerekiyor' : 'Please login to trade'; ?>
+                                        </p>
+                                        <a href="login.php" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-2"></i><?php echo getCurrentLang() == 'tr' ? 'Giriş Yap' : 'Login'; ?>
+                                        </a>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <!-- Sell/Short Form -->
                                 <div class="tab-pane fade" id="sell-pane" role="tabpanel">
-                                    <form id="sellForm">
+                                    <?php if (isLoggedIn()): ?>
+                                    <form id="sellForm" method="POST" action="">
+                                        <input type="hidden" name="modal_action" value="sell">
+                                        <input type="hidden" name="symbol" id="sellSymbol" value="">
+                                        <input type="hidden" name="trade_type" id="sellTradeType" value="">
                                         <div class="mb-3">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <label class="form-label mb-0">Miktar</label>
@@ -822,6 +943,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <i class="fas fa-arrow-down me-2"></i>SHORT POZISYON AÇ
                                         </button>
                                     </form>
+                                    <?php else: ?>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-3">
+                                            <?php echo getCurrentLang() == 'tr' ? 'İşlem yapmak için giriş yapmanız gerekiyor' : 'Please login to trade'; ?>
+                                        </p>
+                                        <a href="login.php" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-2"></i><?php echo getCurrentLang() == 'tr' ? 'Giriş Yap' : 'Login'; ?>
+                                        </a>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
