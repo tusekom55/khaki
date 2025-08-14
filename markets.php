@@ -480,9 +480,9 @@ function openTradeModal(button) {
     
     // Set hidden fields for forms
     document.getElementById('buySymbol').value = symbol;
-    document.getElementById('sellSymbol').value = symbol;
-    document.getElementById('buyTradeType').value = type;
-    document.getElementById('sellTradeType').value = type;
+    if (document.getElementById('sellSymbol')) {
+        document.getElementById('sellSymbol').value = symbol;
+    }
     
     // Configure modal based on type
     configureModalForType(type, action);
@@ -661,7 +661,10 @@ function calculateSimpleTrade() {
         }
         
         // Update label
-        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
+        const labelElement = document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted');
+        if (labelElement) {
+            labelElement.textContent = 'Kalan Bakiye:';
+        }
         
     } else { // USD Mode
         const totalWithFeeUSD = usdAmount + fee;
@@ -682,7 +685,10 @@ function calculateSimpleTrade() {
         }
         
         // Update label
-        document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted').textContent = 'Kalan Bakiye:';
+        const labelElement = document.querySelector('#buy-pane .card-body .d-flex:last-child .text-muted');
+        if (labelElement) {
+            labelElement.textContent = 'Kalan Bakiye:';
+        }
     }
     
     // Calculate lot equivalent for display
@@ -690,6 +696,24 @@ function calculateSimpleTrade() {
     document.getElementById('lotEquivalent').style.display = 'flex';
     document.getElementById('lotAmount').textContent = formatTurkishNumber(lotAmount, 4) + ' Lot';
 }
+
+// Test function to make sure modal opens
+function testModal() {
+    console.log('Test modal function called');
+    const modal = new bootstrap.Modal(document.getElementById('tradeModal'));
+    modal.show();
+}
+
+// Add click event listener when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, adding modal test');
+    
+    // Test if bootstrap is loaded
+    console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+    
+    // Test if modal exists
+    console.log('Modal exists:', document.getElementById('tradeModal') !== null);
+});
 </script>
 
 <!-- Trading Modal -->
