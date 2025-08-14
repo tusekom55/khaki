@@ -645,8 +645,17 @@ function calculateTrade() {
     if (TRADING_CURRENCY === 1) {
         const exchangeInfo = document.getElementById('exchangeInfo');
         if (exchangeInfo) {
-            exchangeInfo.style.display = 'block';
-            exchangeInfo.textContent = `1 USD = ${formatTurkishNumber(USD_TRY_RATE, 4)} TL`;
+            exchangeInfo.style.display = 'flex';
+            exchangeInfo.style.setProperty('display', 'flex', 'important');
+            const exchangeRateSpan = document.getElementById('exchangeRate');
+            if (exchangeRateSpan) {
+                exchangeRateSpan.textContent = `1 USD = ${formatTurkishNumber(USD_TRY_RATE, 4)} TL`;
+            }
+        }
+    } else {
+        const exchangeInfo = document.getElementById('exchangeInfo');
+        if (exchangeInfo) {
+            exchangeInfo.style.display = 'none';
         }
     }
 }
@@ -851,6 +860,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     <small class="fw-bold" id="tradingFee">$0.00</small>
                                                 </div>
                                             </div>
+                                        </div>
+                                        
+                                        <!-- Exchange Rate Info for TL Mode -->
+                                        <div class="alert alert-info d-flex align-items-center py-2" id="exchangeInfo" style="display: none !important;">
+                                            <i class="fas fa-exchange-alt me-2"></i>
+                                            <div class="flex-grow-1">
+                                                <small><strong>Canlı Kur:</strong> <span id="exchangeRate">1 USD = <?php echo formatTurkishNumber($usd_try_rate, 4); ?> TL</span></small>
+                                                <br>
+                                                <small class="text-muted">TL bakiyeniz ile USD kuruna göre işlem yapıyorsunuz</small>
+                                            </div>
+                                            <span class="badge bg-success">CANLI</span>
                                         </div>
                                         
                                         <button type="submit" class="btn btn-success w-100">
