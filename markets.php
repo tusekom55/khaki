@@ -281,8 +281,8 @@ foreach($_SESSION as $session_key => $session_value) {
         </div>
     </div>
     
-    <!-- Financial Categories Grid -->
-    <div class="row mb-4">
+    <!-- Desktop: Financial Categories Grid -->
+    <div class="row mb-4 desktop-categories">
         <div class="col-12">
             <h5 class="mb-3 text-secondary">
                 <i class="fas fa-layer-group me-2"></i>Piyasa Kategorileri
@@ -318,6 +318,34 @@ foreach($_SESSION as $session_key => $session_value) {
                 </div>
                 <?php endforeach; ?>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile: Sticky Category Dropdown -->
+    <div class="mobile-category-header sticky-top" style="display: none;">
+        <div class="dropdown w-100">
+            <button class="btn btn-outline-primary dropdown-toggle w-100 category-dropdown-btn" type="button" 
+                    id="mobileCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="<?php echo $icons[$category] ?? 'fas fa-chart-line'; ?> me-2"></i>
+                <?php echo $categories[$category] ?? 'Piyasa Seçin'; ?>
+            </button>
+            <ul class="dropdown-menu w-100 category-dropdown-menu" aria-labelledby="mobileCategoryDropdown">
+                <?php foreach ($categories as $cat_key => $cat_name): ?>
+                <li>
+                    <a class="dropdown-item d-flex align-items-center <?php echo $category == $cat_key ? 'active' : ''; ?>" 
+                       href="?group=<?php echo $cat_key; ?>">
+                        <i class="<?php echo $icons[$cat_key] ?? 'fas fa-chart-line'; ?> me-2"></i>
+                        <div>
+                            <div class="fw-bold"><?php echo $cat_name; ?></div>
+                            <small class="text-muted"><?php echo $descriptions[$cat_key] ?? ''; ?></small>
+                        </div>
+                        <?php if ($category == $cat_key): ?>
+                        <i class="fas fa-check ms-auto text-primary"></i>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
     </div>
     
@@ -781,6 +809,52 @@ foreach($_SESSION as $session_key => $session_value) {
 
 /* Mobile Optimization Styles */
 @media (max-width: 768px) {
+    /* Hide desktop categories, show mobile dropdown */
+    .desktop-categories {
+        display: none !important;
+    }
+    
+    .mobile-category-header {
+        display: block !important;
+        background: white;
+        z-index: 1020;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 1rem;
+    }
+    
+    .category-dropdown-btn {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .category-dropdown-menu {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: none;
+        padding: 0.5rem 0;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .category-dropdown-menu .dropdown-item {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .category-dropdown-menu .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    
+    .category-dropdown-menu .dropdown-item.active {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+    }
+    
     /* Hide desktop table, show mobile cards */
     .market-table {
         display: none !important;
@@ -1672,15 +1746,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </div>
                                         </div>
                                         
-                                        <!-- Exchange Rate Info for TL Mode -->
-                                        <div class="alert alert-info d-flex align-items-center py-2" id="exchangeInfo" style="display: none !important;">
-                                            <i class="fas fa-exchange-alt me-2"></i>
-                                            <div class="flex-grow-1">
-                                                <small><strong>Canlı Kur:</strong> <span id="exchangeRate">1 USD = <?php echo formatTurkishNumber($usd_try_rate, 4); ?> TL</span></small>
-                                                <br>
-                                                <small class="text-muted">TL bakiyeniz ile USD kuruna göre işlem yapıyorsunuz</small>
-                                            </div>
-                                            <span class="badge bg-success">CANLI</span>
+                                        <!-- Compact Exchange Rate Info for TL Mode -->
+                                        <div class="compact-exchange-info mb-3" id="exchangeInfo" style="display: none !important;">
+                                            <span class="badge bg-info">
+                                                💱 1 USD = <?php echo formatTurkishNumber($usd_try_rate, 2); ?> TL
+                                            </span>
+                                            <small class="text-muted ms-2">TL ile ödeme</small>
                                         </div>
                                         
                                         <button type="submit" class="btn btn-success w-100">
