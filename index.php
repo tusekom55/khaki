@@ -26,6 +26,46 @@ $markets = getMarketData('us_stocks', 6);
     <!-- Custom Styles -->
     <link href="assets/css/landing-new.css" rel="stylesheet">
     <link href="assets/css/landing-index.css" rel="stylesheet">
+    
+    <style>
+        /* Ticker Animation Keyframes */
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Force ticker styles */
+        .ticker-track {
+            display: flex !important;
+            animation: ticker 30s linear infinite !important;
+            gap: 2rem !important;
+            width: max-content !important;
+        }
+        
+        .coin-ticker:hover .ticker-track {
+            animation-play-state: paused !important;
+        }
+        
+        .coin-item {
+            flex-shrink: 0 !important;
+            background: white !important;
+            border-radius: 15px !important;
+            padding: 1.5rem !important;
+            min-width: 200px !important;
+            text-align: center !important;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1) !important;
+            transition: transform 0.3s ease !important;
+        }
+        
+        .coin-item:hover {
+            transform: translateY(-5px) !important;
+        }
+        
+        .coin-flag {
+            font-size: 2rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+    </style>
 </head>
 <body>
     <!-- STYLED NAVBAR (Bootstrap-like) -->
