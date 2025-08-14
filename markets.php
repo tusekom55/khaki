@@ -110,12 +110,12 @@ if (isset($_SESSION['trade_error'])) {
     unset($_SESSION['trade_error']);
 }
 
-// Clear any leftover session messages from old system
-if (isset($_SESSION['error'])) {
-    unset($_SESSION['error']);
-}
-if (isset($_SESSION['success'])) {
-    unset($_SESSION['success']);
+// Clear ALL possible leftover session messages
+$old_error_keys = ['error', 'success', 'message', 'alert', 'notification', 'trade_message', 'status_message'];
+foreach($old_error_keys as $key) {
+    if (isset($_SESSION[$key])) {
+        unset($_SESSION[$key]);
+    }
 }
 ?>
 
