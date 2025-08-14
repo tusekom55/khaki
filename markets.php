@@ -733,19 +733,38 @@ function calculateTrade() {
     const amount = parseFloat(document.getElementById('amount').value) || 0;
     const leverage = parseInt(document.getElementById('leverage').value) || 1;
     const priceUSD = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
-    const amountType = document.querySelector('input[name="amountType"]:checked').value;
+    
+    // Amount type kontrolü - default USD
+    let amountType = 'usd';
+    const checkedAmountType = document.querySelector('input[name="amountType"]:checked');
+    if (checkedAmountType) {
+        amountType = checkedAmountType.value;
+    }
     
     let totalUSD, lotAmount;
     
+    console.log('calculateTrade DEBUG:', {
+        amount: amount,
+        priceUSD: priceUSD,
+        amountType: amountType,
+        leverage: leverage
+    });
+    
     // Calculate based on amount type
     if (amountType === 'usd') {
+        // USD ile işlem - kullanıcı 10 USD girdiyse toplam 10 USD
         totalUSD = amount;
         lotAmount = amount / priceUSD;
     } else {
-        // Lot ile işlem
+        // Lot ile işlem - kullanıcı 1 lot girdiyse toplam 1 * price USD
         totalUSD = amount * priceUSD;
         lotAmount = amount;
     }
+    
+    console.log('Calculation result:', {
+        totalUSD: totalUSD,
+        lotAmount: lotAmount
+    });
     
     // TL MODE HESAPLAMASI - Parametre 1 ise TL modu
     if (TRADING_CURRENCY === 1) { // TL mode
