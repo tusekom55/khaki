@@ -1440,7 +1440,7 @@ function setupSimpleTrading(action) {
     const buyTab = document.getElementById('buy-tab');
     const sellTab = document.getElementById('sell-tab');
     
-    buyTab.innerHTML = '<i class="fas fa-shopping-cart me-1"></i>SATIN AL';
+    buyTab.innerHTML = '<i class="fas fa-shopping-cart me-1"></i>AL';
     sellTab.innerHTML = '<i class="fas fa-hand-holding-usd me-1"></i>SAT';
     
     // Hide leverage controls
@@ -1855,79 +1855,60 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="tab-pane fade show active" id="trading-pane-mobile" role="tabpanel">
                             <div class="trading-container-mobile">
                                 <div class="p-3">
-                                    <!-- Buy/Sell Tabs -->
-                                    <ul class="nav nav-pills nav-fill mb-3" id="tradingTabsMobile" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="buy-tab-mobile" data-bs-toggle="pill" data-bs-target="#buy-pane-mobile" type="button">
-                                                <i class="fas fa-arrow-up me-1"></i>LONG
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="sell-tab-mobile" data-bs-toggle="pill" data-bs-target="#sell-pane-mobile" type="button">
-                                                <i class="fas fa-arrow-down me-1"></i>SHORT
-                                            </button>
-                                        </li>
-                                    </ul>
+                                    <!-- Mobile Trading Form - Basit AL/SAT -->
+                                    <?php if (isLoggedIn()): ?>
                                     
-                                    <div class="tab-content" id="tradingTabsContentMobile">
-                                        <!-- Mobile Buy Form -->
-                                        <div class="tab-pane fade show active" id="buy-pane-mobile" role="tabpanel">
-                                            <?php if (isLoggedIn()): ?>
-                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
-                                                <input type="hidden" name="trade_action" value="buy">
-                                                <input type="hidden" name="symbol" id="buySymbolMobile" value="">
-                                                
-                                                <div class="mb-3">
-                                                    <label class="form-label">USD Miktar</label>
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
-                                                               placeholder="10.00" required>
-                                                        <span class="input-group-text">USD</span>
-                                                    </div>
+                                    <!-- AL FORMU -->
+                                    <div class="mb-4">
+                                        <h6><i class="fas fa-shopping-cart me-2 text-success"></i>Satın Al</h6>
+                                        <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                            <input type="hidden" name="trade_action" value="buy">
+                                            <input type="hidden" name="symbol" id="buySymbolMobile" value="">
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">USD Miktar</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                           placeholder="10.00" required>
+                                                    <span class="input-group-text">USD</span>
                                                 </div>
-                                                
-                                                <button type="submit" class="btn btn-success w-100">
-                                                    <i class="fas fa-shopping-cart me-2"></i>SATIN AL
-                                                </button>
-                                            </form>
-                                            <?php else: ?>
-                                            <div class="text-center py-4">
-                                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
-                                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
                                             </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        
-                                        <!-- Mobile Sell Form -->
-                                        <div class="tab-pane fade" id="sell-pane-mobile" role="tabpanel">
-                                            <?php if (isLoggedIn()): ?>
-                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
-                                                <input type="hidden" name="trade_action" value="sell">
-                                                <input type="hidden" name="symbol" id="sellSymbolMobile" value="">
-                                                
-                                                <div class="mb-3">
-                                                    <label class="form-label">USD Miktar</label>
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
-                                                               placeholder="10.00" required>
-                                                        <span class="input-group-text">USD</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <button type="submit" class="btn btn-danger w-100">
-                                                    <i class="fas fa-hand-holding-usd me-2"></i>SAT
-                                                </button>
-                                            </form>
-                                            <?php else: ?>
-                                            <div class="text-center py-4">
-                                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
-                                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
-                                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
-                                            </div>
-                                            <?php endif; ?>
-                                        </div>
+                                            
+                                            <button type="submit" class="btn btn-success w-100">
+                                                <i class="fas fa-shopping-cart me-2"></i>SATIN AL
+                                            </button>
+                                        </form>
                                     </div>
+                                    
+                                    <!-- SAT FORMU -->
+                                    <div class="mb-4">
+                                        <h6><i class="fas fa-hand-holding-usd me-2 text-danger"></i>Sat</h6>
+                                        <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                            <input type="hidden" name="trade_action" value="sell">
+                                            <input type="hidden" name="symbol" id="sellSymbolMobile" value="">
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">USD Miktar</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                           placeholder="10.00" required>
+                                                    <span class="input-group-text">USD</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn btn-danger w-100">
+                                                <i class="fas fa-hand-holding-usd me-2"></i>SAT
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <?php else: ?>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                        <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
