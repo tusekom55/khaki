@@ -633,29 +633,36 @@ $markets = getMarketData('us_stocks', 6);
     <script>
         // Manual navigation click handlers - Force fix
         document.addEventListener('DOMContentLoaded', function() {
-            // Add click handlers to all navbar links
-            const navLinks = document.querySelectorAll('.navbar a');
-            navLinks.forEach(function(link) {
+            // Specifically handle navigation menu links
+            const navMenuLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            console.log('Found nav menu links:', navMenuLinks.length);
+            
+            navMenuLinks.forEach(function(link, index) {
+                console.log('Setting up click handler for nav link', index, link.textContent);
                 link.addEventListener('click', function(e) {
+                    e.preventDefault();
                     e.stopPropagation();
                     const href = this.getAttribute('href');
+                    console.log('Navigation link clicked:', href);
                     if (href && href !== '#') {
                         window.location.href = href;
                     }
                 });
             });
             
-            // Add click handlers to buttons
-            const navButtons = document.querySelectorAll('.navbar .btn');
-            navButtons.forEach(function(btn) {
-                btn.addEventListener('click', function(e) {
+            // Handle navbar brand
+            const navbarBrand = document.querySelector('.navbar-brand');
+            if (navbarBrand) {
+                navbarBrand.addEventListener('click', function(e) {
+                    e.preventDefault();
                     e.stopPropagation();
                     const href = this.getAttribute('href');
+                    console.log('Brand clicked:', href);
                     if (href && href !== '#') {
                         window.location.href = href;
                     }
                 });
-            });
+            }
             
         // Initialize slider
         initSlider();
