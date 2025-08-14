@@ -1064,19 +1064,48 @@ foreach($_SESSION as $session_key => $session_value) {
         height: 100%;
     }
     
-    /* Mobile Modal Layout */
-    .modal-body .row {
-        flex-direction: column !important;
+    /* Mobile Modal Tabs */
+    .mobile-modal-tabs {
+        display: block !important;
     }
     
-    .modal-body .col-md-8,
-    .modal-body .col-md-4 {
-        max-width: 100% !important;
-        width: 100% !important;
+    .mobile-modal-tabs .nav-tabs {
+        border-bottom: 1px solid #dee2e6;
+        background: #f8f9fa;
+        border-radius: 16px 16px 0 0;
     }
     
-    /* Hide chart on mobile, focus on trading */
-    .modal-body .col-md-8 {
+    .mobile-modal-tabs .nav-link {
+        border: none;
+        border-radius: 0;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+        background: none;
+    }
+    
+    .mobile-modal-tabs .nav-link.active {
+        color: #007bff;
+        background: white;
+        border-bottom-color: #007bff;
+    }
+    
+    .mobile-tab-content {
+        height: calc(85vh - 120px);
+        overflow-y: auto;
+    }
+    
+    .trading-container-mobile {
+        height: 100%;
+    }
+    
+    .chart-container-mobile {
+        height: 100%;
+    }
+    
+    /* Hide desktop layout on mobile */
+    .desktop-layout {
         display: none !important;
     }
     
@@ -1353,10 +1382,18 @@ function openTradeModal(button) {
     document.getElementById('modalPrice').textContent = formatPrice(price);
     document.getElementById('modalChange').textContent = document.querySelector(`[data-symbol="${symbol}"] .text-success, [data-symbol="${symbol}"] .text-danger`).textContent;
     
-    // Set hidden fields for forms
+    // Set hidden fields for forms - Desktop
     document.getElementById('buySymbol').value = symbol;
     if (document.getElementById('sellSymbol')) {
         document.getElementById('sellSymbol').value = symbol;
+    }
+    
+    // Set hidden fields for forms - Mobile  
+    if (document.getElementById('buySymbolMobile')) {
+        document.getElementById('buySymbolMobile').value = symbol;
+    }
+    if (document.getElementById('sellSymbolMobile')) {
+        document.getElementById('sellSymbolMobile').value = symbol;
     }
     
     // Configure modal based on type
@@ -1493,9 +1530,17 @@ function updateTradingViewWidget(symbol) {
         tvSymbol = symbol.replace('^', '');
     }
     
-    // Update TradingView iframe src
+    // Update Desktop TradingView iframe
     const iframe = document.getElementById('tradingview-widget');
-    iframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
+    if (iframe) {
+        iframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1D&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
+    }
+    
+    // Update Mobile TradingView iframe
+    const mobileIframe = document.getElementById('tradingview-widget-mobile');
+    if (mobileIframe) {
+        mobileIframe.src = `https://www.tradingview.com/widgetembed/?frameElementId=tradingview_mobile&symbol=${tvSymbol}&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}`;
+    }
 }
 
 // Simple Clean Trading Calculation with Smart Button Control
@@ -1788,7 +1833,131 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
-                <div class="row g-0">
+                <!-- Mobile Tab Navigation -->
+                <div class="mobile-modal-tabs" style="display: none;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link active w-100" id="trading-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#trading-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-coins me-1"></i>💰 İşlem
+                            </button>
+                        </li>
+                        <li class="nav-item flex-fill" role="presentation">
+                            <button class="nav-link w-100" id="chart-tab-mobile" data-bs-toggle="tab" 
+                                    data-bs-target="#chart-pane-mobile" type="button" role="tab">
+                                <i class="fas fa-chart-line me-1"></i>📈 Grafik
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mobile-tab-content">
+                        <!-- Mobile Trading Tab -->
+                        <div class="tab-pane fade show active" id="trading-pane-mobile" role="tabpanel">
+                            <div class="trading-container-mobile">
+                                <div class="p-3">
+                                    <!-- Buy/Sell Tabs -->
+                                    <ul class="nav nav-pills nav-fill mb-3" id="tradingTabsMobile" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="buy-tab-mobile" data-bs-toggle="pill" data-bs-target="#buy-pane-mobile" type="button">
+                                                <i class="fas fa-arrow-up me-1"></i>LONG
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="sell-tab-mobile" data-bs-toggle="pill" data-bs-target="#sell-pane-mobile" type="button">
+                                                <i class="fas fa-arrow-down me-1"></i>SHORT
+                                            </button>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="tab-content" id="tradingTabsContentMobile">
+                                        <!-- Mobile Buy Form -->
+                                        <div class="tab-pane fade show active" id="buy-pane-mobile" role="tabpanel">
+                                            <?php if (isLoggedIn()): ?>
+                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                                <input type="hidden" name="trade_action" value="buy">
+                                                <input type="hidden" name="symbol" id="buySymbolMobile" value="">
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">USD Miktar</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                               placeholder="10.00" required>
+                                                        <span class="input-group-text">USD</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="fas fa-shopping-cart me-2"></i>SATIN AL
+                                                </button>
+                                            </form>
+                                            <?php else: ?>
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        
+                                        <!-- Mobile Sell Form -->
+                                        <div class="tab-pane fade" id="sell-pane-mobile" role="tabpanel">
+                                            <?php if (isLoggedIn()): ?>
+                                            <form method="POST" action="markets.php?group=<?php echo $category; ?>">
+                                                <input type="hidden" name="trade_action" value="sell">
+                                                <input type="hidden" name="symbol" id="sellSymbolMobile" value="">
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">USD Miktar</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control" name="usd_amount" step="0.01" min="0.01" 
+                                                               placeholder="10.00" required>
+                                                        <span class="input-group-text">USD</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-danger w-100">
+                                                    <i class="fas fa-hand-holding-usd me-2"></i>SAT
+                                                </button>
+                                            </form>
+                                            <?php else: ?>
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted mb-3">İşlem yapmak için giriş yapın</p>
+                                                <a href="login.php" class="btn btn-primary">Giriş Yap</a>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Chart Tab -->
+                        <div class="tab-pane fade" id="chart-pane-mobile" role="tabpanel">
+                            <div class="chart-container-mobile">
+                                <div class="p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">📈 Fiyat Grafiği</h6>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-secondary">1D</button>
+                                            <button type="button" class="btn btn-outline-secondary active">1H</button>
+                                            <button type="button" class="btn btn-outline-secondary">15M</button>
+                                        </div>
+                                    </div>
+                                    <div style="height: 300px; border-radius: 8px; overflow: hidden;">
+                                        <iframe id="tradingview-widget-mobile" 
+                                                src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_mobile&symbol=AAPL&interval=1H&hidesidetoolbar=1&hidetoptoolbar=1&symboledit=1&saveimage=1&toolbarbg=F1F3F6&studies=[]&hideideas=1&theme=Light&style=1&timezone=Etc%2FUTC&locale=en&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=AAPL"
+                                                style="width: 100%; height: 100%; border: none;">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Desktop Layout -->
+                <div class="desktop-layout row g-0">
                     <!-- Chart Section -->
                     <div class="col-md-8 border-end">
                         <div class="p-3">
