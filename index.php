@@ -1213,8 +1213,8 @@ $markets = getMarketData('us_stocks', 6);
                                 'Günlük kripto analizleri, webinarlar ve eğitim materyalleri ile yatırım bilginizi artırın. Başarılı trader\'ların sırlarını öğrenin.' : 
                                 'Increase your investment knowledge with daily crypto analysis, webinars and training materials. Learn the secrets of successful traders.'; ?>
                         </p>
-                        <a href="#" class="btn-cta">
-                            <?php echo getCurrentLang() == 'tr' ? 'Ücretsiz Eğitime Başla' : 'Start Free Training'; ?>
+                        <a href="markets.php" class="btn-cta">
+                            <?php echo getCurrentLang() == 'tr' ? 'Piyasalara Göz Atın' : 'View Markets'; ?>
                         </a>
                         <p class="hero-disclaimer">
                             *<?php echo getCurrentLang() == 'tr' ? 'Eğitim materyalleri ücretsizdir' : 'Training materials are free'; ?>
@@ -1481,8 +1481,8 @@ $markets = getMarketData('us_stocks', 6);
                             </div>
                         </div>
                         <p><?php echo getCurrentLang() == 'tr' ? 'Yüksek puanlı, ödüllü GlobalBorsa uygulamasıyla hizmetlerine eksiksiz erişin.' : 'Get complete access to services with the highly-rated, award-winning GlobalBorsa app.'; ?></p>
-                        <a href="#" class="promo-btn">
-                            <?php echo getCurrentLang() == 'tr' ? 'Uygulamayı Edinin' : 'Get the App'; ?> 
+                        <a href="profile.php" class="promo-btn">
+                            <?php echo getCurrentLang() == 'tr' ? 'Hesabınıza Giriş Yapın' : 'Login to Your Account'; ?> 
                             <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -1522,7 +1522,7 @@ $markets = getMarketData('us_stocks', 6);
                     <div class="promo-content">
                         <h3><?php echo getCurrentLang() == 'tr' ? 'GlobalBorsa yarışmaları' : 'GlobalBorsa competitions'; ?></h3>
                         <p><?php echo getCurrentLang() == 'tr' ? 'Yatırımlarınızla zirveye ilerleyin ve toplam 50.000 TL çekilebilir nakit ödülden payınızı alın.' : 'Advance to the top with your investments and get your share of 50,000 TL total withdrawable cash prizes.'; ?></p>
-                        <a href="#" class="promo-btn">
+                        <a href="trading.php" class="promo-btn">
                             <?php echo getCurrentLang() == 'tr' ? 'Hemen katılın' : 'Join now'; ?> 
                             <i class="fas fa-arrow-right"></i>
                         </a>
@@ -1540,8 +1540,8 @@ $markets = getMarketData('us_stocks', 6);
                     <div class="promo-content">
                         <h3><?php echo getCurrentLang() == 'tr' ? 'GlobalBorsa copy trade' : 'GlobalBorsa copy trade'; ?></h3>
                         <p><?php echo getCurrentLang() == 'tr' ? 'Kazançlı yatırım stratejilerini kopyalayan 1.000\'den fazla yatırımcıya katılın ya da işlemlerinizi paylaşıp komisyon kazanın.' : 'Join over 1,000 investors copying profitable investment strategies or share your trades and earn commissions.'; ?></p>
-                        <a href="#" class="promo-btn">
-                            <?php echo getCurrentLang() == 'tr' ? 'Copy trade\'e başlayın' : 'Start copy trading'; ?> 
+                        <a href="wallet.php" class="promo-btn">
+                            <?php echo getCurrentLang() == 'tr' ? 'Cüzdanınızı Görüntüleyin' : 'View Your Wallet'; ?> 
                             <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
