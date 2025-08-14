@@ -244,33 +244,50 @@ $markets = getMarketData('us_stocks', 6);
     </section>
 
 
-    <!-- Service Cards -->
-    <section class="services" id="services">
+    <!-- PURE INLINE SERVICE CARDS -->
+    <section style="background: #f8f9fa; padding: 80px 0; z-index: 100; position: relative;">
         <div class="container">
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; margin-top: 20px;">
+                
+                <!-- Security Card -->
+                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3><?php echo getCurrentLang() == 'tr' ? 'Güvenli ve Şifreli' : 'Secure and Encrypted'; ?></h3>
-                    <p><?php echo getCurrentLang() == 'tr' ? 'SSL şifreleme ve çoklu güvenlik katmanları ile paranız her zaman güvende.' : 'Your money is always safe with SSL encryption and multiple security layers.'; ?></p>
+                    <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                        <?php echo getCurrentLang() == 'tr' ? 'Güvenli ve Şifreli' : 'Secure and Encrypted'; ?>
+                    </h3>
+                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                        <?php echo getCurrentLang() == 'tr' ? 'SSL şifreleme ve çoklu güvenlik katmanları ile paranız her zaman güvende.' : 'Your money is always safe with SSL encryption and multiple security layers.'; ?>
+                    </p>
                 </div>
 
-                <div class="service-card">
-                    <div class="service-icon">
+                <!-- Trading Tools Card -->
+                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
                         <i class="fas fa-chart-bar"></i>
                     </div>
-                    <h3><?php echo getCurrentLang() == 'tr' ? 'Gelişmiş Ticaret Araçları' : 'Advanced Trading Tools'; ?></h3>
-                    <p><?php echo getCurrentLang() == 'tr' ? 'Profesyonel grafik araçları ve teknik analiz göstergeleri ile ticaret yapın.' : 'Trade with professional charting tools and technical analysis indicators.'; ?></p>
+                    <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                        <?php echo getCurrentLang() == 'tr' ? 'Gelişmiş Ticaret Araçları' : 'Advanced Trading Tools'; ?>
+                    </h3>
+                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                        <?php echo getCurrentLang() == 'tr' ? 'Profesyonel grafik araçları ve teknik analiz göstergeleri ile ticaret yapın.' : 'Trade with professional charting tools and technical analysis indicators.'; ?>
+                    </p>
                 </div>
 
-                <div class="service-card">
-                    <div class="service-icon">
+                <!-- Support Card -->
+                <div style="background: #fff; padding: 40px 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; border-top: 3px solid #007bff; cursor: pointer;" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='0 15px 40px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0, 0, 0, 0.1)'">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #007bff, #0056b3); border-radius: 50%; color: #fff; font-size: 2rem;">
                         <i class="fas fa-headset"></i>
                     </div>
-                    <h3><?php echo getCurrentLang() == 'tr' ? '7/24 Türkçe Destek' : '24/7 Turkish Support'; ?></h3>
-                    <p><?php echo getCurrentLang() == 'tr' ? 'Uzman ekibimiz 7 gün 24 saat Türkçe destek hizmeti sunmaktadır.' : 'Our expert team provides 24/7 Turkish support service.'; ?></p>
+                    <h3 style="font-size: 1.4rem; font-weight: 600; color: #0d1b4c; margin-bottom: 15px;">
+                        <?php echo getCurrentLang() == 'tr' ? '7/24 Türkçe Destek' : '24/7 Turkish Support'; ?>
+                    </h3>
+                    <p style="color: #666; line-height: 1.6; margin: 0;">
+                        <?php echo getCurrentLang() == 'tr' ? 'Uzman ekibimiz 7 gün 24 saat Türkçe destek hizmeti sunmaktadır.' : 'Our expert team provides 24/7 Turkish support service.'; ?>
+                    </p>
                 </div>
+                
             </div>
         </div>
     </section>
