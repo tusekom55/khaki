@@ -442,8 +442,106 @@ foreach($_SESSION as $session_key => $session_value) {
         </div>
     </div>
     
+    <!-- Mobile Market Cards (Hidden on Desktop) -->
+    <div class="mobile-market-cards" style="display: none;">
+        <?php if (empty($markets)): ?>
+        <div class="text-center py-5">
+            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+            <p class="text-muted">
+                <?php echo getCurrentLang() == 'tr' ? 'Henüz piyasa verisi yok' : 'No market data available'; ?>
+            </p>
+        </div>
+        <?php else: ?>
+        <?php foreach ($markets as $market): ?>
+        <div class="mobile-market-card" data-symbol="<?php echo $market['symbol']; ?>">
+            <!-- Market Header -->
+            <div class="mobile-market-header">
+                <?php if ($market['logo_url']): ?>
+                <img src="<?php echo $market['logo_url']; ?>" 
+                     alt="<?php echo $market['name']; ?>" 
+                     class="mobile-market-logo"
+                     onerror="this.outerHTML='<div class=&quot;mobile-market-logo bg-primary d-flex align-items-center justify-content-center&quot;><i class=&quot;fas fa-coins text-white&quot;></i></div>';">
+                <?php else: ?>
+                <div class="mobile-market-logo bg-primary d-flex align-items-center justify-content-center">
+                    <i class="fas fa-coins text-white"></i>
+                </div>
+                <?php endif; ?>
+                
+                <div class="mobile-market-info">
+                    <h6><?php echo $market['symbol']; ?></h6>
+                    <small><?php echo $market['name']; ?></small>
+                </div>
+                
+                <div class="mobile-market-price">
+                    <div class="price" data-price="<?php echo $market['price']; ?>">
+                        <?php echo formatPrice($market['price']); ?>
+                        <small class="text-muted">
+                            <?php echo $category == 'crypto_tl' ? 'TL' : ($category == 'crypto_usd' ? 'USDT' : 'USD'); ?>
+                        </small>
+                    </div>
+                    <div class="change">
+                        <?php echo formatChange($market['change_24h']); ?>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Market Stats Grid -->
+            <div class="mobile-market-stats">
+                <div class="mobile-stat">
+                    <div class="mobile-stat-label">Düşük</div>
+                    <div class="mobile-stat-value"><?php echo formatPrice($market['low_24h']); ?></div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-label">Yüksek</div>
+                    <div class="mobile-stat-value"><?php echo formatPrice($market['high_24h']); ?></div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-label">Hacim</div>
+                    <div class="mobile-stat-value"><?php echo formatVolume($market['volume_24h']); ?></div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-label">Piyasa Değeri</div>
+                    <div class="mobile-stat-value"><?php echo formatVolume($market['market_cap']); ?></div>
+                </div>
+            </div>
+            
+            <!-- Mobile Trading Buttons -->
+            <div class="mobile-trade-buttons">
+                <button type="button" class="btn btn-success trade-btn" 
+                        data-symbol="<?php echo $market['symbol']; ?>" 
+                        data-name="<?php echo $market['name']; ?>" 
+                        data-price="<?php echo $market['price']; ?>" 
+                        data-action="buy"
+                        data-type="simple"
+                        onclick="openTradeModal(this);">
+                    <i class="fas fa-shopping-cart me-1"></i>AL
+                </button>
+                <button type="button" class="btn btn-danger trade-btn" 
+                        data-symbol="<?php echo $market['symbol']; ?>" 
+                        data-name="<?php echo $market['name']; ?>" 
+                        data-price="<?php echo $market['price']; ?>" 
+                        data-action="sell"
+                        data-type="simple"
+                        onclick="openTradeModal(this);">
+                    <i class="fas fa-hand-holding-usd me-1"></i>SAT
+                </button>
+                <button type="button" class="btn btn-warning trade-btn" 
+                        data-symbol="<?php echo $market['symbol']; ?>" 
+                        data-name="<?php echo $market['name']; ?>" 
+                        data-price="<?php echo $market['price']; ?>" 
+                        data-action="leverage"
+                        data-type="leverage"
+                        onclick="openTradeModal(this);">
+                    <i class="fas fa-bolt me-1"></i>KALDIRAÇ
+                </button>
+            </div>
+        </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+    
     <!-- Market Stats -->
-    <div class="row mt-4">
+    <div class="row mt-4 market-stats-mobile">
         <div class="col-md-3">
             <div class="card border-0 bg-light">
                 <div class="card-body text-center">
@@ -680,6 +778,216 @@ foreach($_SESSION as $session_key => $session_value) {
     font-weight: 600;
     color: #495057;
 }
+
+/* Mobile Optimization Styles */
+@media (max-width: 768px) {
+    /* Hide desktop table, show mobile cards */
+    .market-table {
+        display: none !important;
+    }
+    
+    .mobile-market-cards {
+        display: block !important;
+    }
+    
+    /* Mobile Category Cards - Horizontal Scroll */
+    .mobile-categories {
+        display: flex !important;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 1rem;
+        padding: 0 1rem;
+        margin: 0 -1rem;
+    }
+    
+    .mobile-categories .category-card {
+        min-width: 200px;
+        flex-shrink: 0;
+        scroll-snap-align: start;
+    }
+    
+    /* Bottom Sheet Modal */
+    .modal-dialog {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 !important;
+        max-height: 85vh !important;
+        border-radius: 16px 16px 0 0 !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    .modal.show .modal-dialog {
+        transform: translateY(0) !important;
+    }
+    
+    .modal-content {
+        border-radius: 16px 16px 0 0 !important;
+        height: 100%;
+    }
+    
+    /* Mobile Modal Layout */
+    .modal-body .row {
+        flex-direction: column !important;
+    }
+    
+    .modal-body .col-md-8,
+    .modal-body .col-md-4 {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Hide chart on mobile, focus on trading */
+    .modal-body .col-md-8 {
+        display: none !important;
+    }
+    
+    /* Page Header Mobile */
+    .page-header-mobile {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .page-header-mobile h1 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Search Bar Mobile */
+    .mobile-search {
+        margin-bottom: 1rem;
+    }
+    
+    /* Market Stats Mobile */
+    .market-stats-mobile .col-md-3 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .market-stats-mobile .card {
+        padding: 0.5rem;
+    }
+    
+    .market-stats-mobile h5 {
+        font-size: 1.2rem;
+    }
+    
+    /* Mobile Trading Buttons */
+    .mobile-trade-buttons {
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+    
+    .mobile-trade-buttons .btn {
+        flex: 1;
+        font-size: 0.75rem;
+        padding: 0.5rem 0.25rem;
+        min-height: 44px; /* Touch-friendly */
+    }
+    
+    /* Mobile Market Card */
+    .mobile-market-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+    }
+    
+    .mobile-market-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    
+    .mobile-market-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .mobile-market-info h6 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .mobile-market-info small {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .mobile-market-price {
+        margin-left: auto;
+        text-align: right;
+    }
+    
+    .mobile-market-price .price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .mobile-market-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .mobile-stat {
+        text-align: center;
+    }
+    
+    .mobile-stat-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .mobile-stat-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    /* Container padding adjustment for mobile */
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Mobile Page Header */
+    .row.mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .row.mb-4 .col-md-8,
+    .row.mb-4 .col-md-4 {
+        max-width: 100%;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Desktop-only styles */
+@media (min-width: 769px) {
+    .mobile-market-cards {
+        display: none !important;
+    }
+    
+    .mobile-categories {
+        display: none !important;
+    }
+}
 </style>
 
 <script>
@@ -688,11 +996,12 @@ const TRADING_CURRENCY = <?php echo $trading_currency; ?>; // 1=TL, 2=USD
 const CURRENCY_SYMBOL = '<?php echo $currency_symbol; ?>';
 const USD_TRY_RATE = <?php echo $usd_try_rate; ?>;
 
-// Search functionality
+// Enhanced Search functionality for both desktop and mobile
 document.getElementById('marketSearch').addEventListener('input', function(e) {
     const searchTerm = e.target.value.toLowerCase();
-    const rows = document.querySelectorAll('.market-row');
     
+    // Search desktop table rows
+    const rows = document.querySelectorAll('.market-row');
     rows.forEach(row => {
         const symbol = row.querySelector('.fw-bold').textContent.toLowerCase();
         const name = row.querySelector('.text-muted').textContent.toLowerCase();
@@ -701,6 +1010,19 @@ document.getElementById('marketSearch').addEventListener('input', function(e) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
+        }
+    });
+    
+    // Search mobile cards
+    const mobileCards = document.querySelectorAll('.mobile-market-card');
+    mobileCards.forEach(card => {
+        const symbol = card.querySelector('.mobile-market-info h6').textContent.toLowerCase();
+        const name = card.querySelector('.mobile-market-info small').textContent.toLowerCase();
+        
+        if (symbol.includes(searchTerm) || name.includes(searchTerm)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
         }
     });
 });
