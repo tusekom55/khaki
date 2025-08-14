@@ -121,19 +121,7 @@ foreach($old_error_keys as $key) {
 
 <div class="container">
     
-    <?php if ($success_message): ?>
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-        <i class="fas fa-check-circle me-2"></i><?php echo $success_message; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php endif; ?>
-    
-    <?php if ($error_message): ?>
-    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i><?php echo $error_message; ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <?php endif; ?>
+    <!-- Bootstrap alerts kaldırıldı - Artık sadece popup sistem kullanılıyor -->
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col-md-8">
@@ -875,12 +863,66 @@ function closeSuccessPopup() {
     }
 }
 
-// Check for success message on page load
+// Check for success/error messages on page load
 document.addEventListener('DOMContentLoaded', function() {
     <?php if ($success_message): ?>
     showSuccessPopup('<?php echo addslashes($success_message); ?>');
     <?php endif; ?>
+    
+    <?php if ($error_message): ?>
+    showErrorPopup('<?php echo addslashes($error_message); ?>');
+    <?php endif; ?>
 });
+
+// Error Popup System
+function showErrorPopup(message) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('errorPopup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Create popup HTML
+    const popup = document.createElement('div');
+    popup.id = 'errorPopup';
+    popup.className = 'success-popup'; // Reuse same CSS class
+    popup.innerHTML = `
+        <div class="success-overlay"></div>
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+            </div>
+            <h3 style="color: #dc3545;">İşlem Başarısız!</h3>
+            <p>${message}</p>
+            <button onclick="closeErrorPopup()" class="btn btn-danger">
+                <i class="fas fa-times me-2"></i>Tamam
+            </button>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(popup);
+    
+    // Show with animation
+    setTimeout(() => {
+        popup.classList.add('show');
+    }, 10);
+    
+    // Auto close after 5 seconds
+    setTimeout(() => {
+        closeErrorPopup();
+    }, 5000);
+}
+
+function closeErrorPopup() {
+    const popup = document.getElementById('errorPopup');
+    if (popup) {
+        popup.classList.add('closing');
+        setTimeout(() => {
+            popup.remove();
+        }, 300);
+    }
+}
 
 // Test function to make sure modal opens
 function testModal() {
