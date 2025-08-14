@@ -103,7 +103,11 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
             // Clear any existing error messages first
             unset($_SESSION['trade_error']);
             
-            $_SESSION['trade_success'] = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
+            // Detailed success message with trade info
+            $action_text = $trade_action == 'buy' ? 'ALINDI' : 'SATILDI';
+            $detailed_message = "$usd_amount USD $symbol $action_text";
+            
+            $_SESSION['trade_success'] = $detailed_message;
             header('Location: markets.php?group=' . $category);
             exit();
         } else {
@@ -596,6 +600,86 @@ foreach($_SESSION as $session_key => $session_value) {
     border-radius: 8px;
     font-weight: 500;
 }
+
+/* Trade Details Styling */
+.trade-details {
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.trade-summary {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.trade-main-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.trade-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.trade-symbol {
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+}
+
+.trade-action {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.action-buy {
+    background: rgba(255, 255, 255, 0.9);
+    color: #28a745;
+}
+
+.action-sell {
+    background: rgba(255, 255, 255, 0.9);
+    color: #dc3545;
+}
+
+.trade-breakdown {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.breakdown-row:last-child {
+    border-bottom: none;
+}
+
+.breakdown-row span:first-child {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.breakdown-row .value {
+    font-weight: 600;
+    color: #495057;
+}
 </style>
 
 <script>
@@ -951,7 +1035,7 @@ function calculateSimpleTrade() {
     document.getElementById('lotAmount').textContent = formatTurkishNumber(lotAmount, 4) + ' Lot';
 }
 
-// Success Popup System
+// Success Popup System with Detailed Trade Info
 function showSuccessPopup(message) {
     // Remove any existing popup
     const existingPopup = document.getElementById('successPopup');
@@ -959,7 +1043,22 @@ function showSuccessPopup(message) {
         existingPopup.remove();
     }
     
-    // Create popup HTML
+    // Parse the message to extract details (format: "10 USD NVDA ALINDI")
+    const parts = message.split(' ');
+    const amount = parts[0];
+    const currency = parts[1];
+    const symbol = parts[2];
+    const action = parts[3];
+    
+    // Get current price and calculate details
+    const currentPrice = document.getElementById('modalPrice') ? 
+        parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.')) : 0;
+    
+    const usdAmount = parseFloat(amount);
+    const fee = usdAmount * 0.001; // 0.1% fee
+    const lotAmount = currentPrice > 0 ? usdAmount / currentPrice : 0;
+    
+    // Create detailed popup HTML
     const popup = document.createElement('div');
     popup.id = 'successPopup';
     popup.className = 'success-popup';
@@ -969,8 +1068,37 @@ function showSuccessPopup(message) {
             <div class="success-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <h3>İşlem Başarılı!</h3>
-            <p>${message}</p>
+            <h3>🎉 İşlem Başarılı!</h3>
+            
+            <div class="trade-details">
+                <div class="trade-summary">
+                    <div class="trade-main-info">
+                        <span class="trade-amount">${amount} ${currency}</span>
+                        <span class="trade-symbol">${symbol}</span>
+                        <span class="trade-action ${action === 'ALINDI' ? 'action-buy' : 'action-sell'}">${action}</span>
+                    </div>
+                </div>
+                
+                <div class="trade-breakdown">
+                    <div class="breakdown-row">
+                        <span>💰 Miktar:</span>
+                        <span class="value">${amount} USD</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>📈 Fiyat:</span>
+                        <span class="value">$${currentPrice.toFixed(4)}</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>📊 Lot:</span>
+                        <span class="value">${lotAmount.toFixed(4)} Lot</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>💸 Ücret:</span>
+                        <span class="value">$${fee.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+            
             <button onclick="closeSuccessPopup()" class="btn btn-success">
                 <i class="fas fa-check me-2"></i>Tamam
             </button>
@@ -985,10 +1113,10 @@ function showSuccessPopup(message) {
         popup.classList.add('show');
     }, 10);
     
-    // Auto close after 5 seconds
+    // Auto close after 3 seconds (kullanıcı isteği)
     setTimeout(() => {
         closeSuccessPopup();
-    }, 5000);
+    }, 3000);
 }
 
 function closeSuccessPopup() {
