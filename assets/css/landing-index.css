@@ -1,14 +1,23 @@
 /* ===== LANDING PAGE SPECIFIC STYLES ===== */
 body {
-    padding-top: 76px;
+    padding-top: 120px !important;
+    margin-top: 0 !important;
+}
+
+/* Force navbar to top */
+.navbar {
+    top: 0 !important;
+    z-index: 99999 !important;
+    position: fixed !important;
 }
 
 /* ===== HERO SLIDER ===== */
 .hero-slider {
     position: relative !important;
-    height: calc(100vh - 76px) !important;
+    height: calc(100vh - 120px) !important;
     overflow: hidden !important;
     background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%) !important;
+    z-index: 1 !important;
 }
 
 .slider-container {
