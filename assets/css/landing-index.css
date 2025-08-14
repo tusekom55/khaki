@@ -9,6 +9,32 @@ body {
     top: 0 !important;
     z-index: 99999 !important;
     position: fixed !important;
+    pointer-events: auto !important;
+}
+
+/* Force all navbar elements to be clickable */
+.navbar * {
+    pointer-events: auto !important;
+}
+
+.navbar .nav-link {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.navbar .navbar-brand {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.navbar .btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+.navbar .dropdown-toggle {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 /* ===== HERO SLIDER ===== */
