@@ -109,6 +109,14 @@ if (isset($_SESSION['trade_error'])) {
     $error_message = $_SESSION['trade_error'];
     unset($_SESSION['trade_error']);
 }
+
+// Clear any leftover session messages from old system
+if (isset($_SESSION['error'])) {
+    unset($_SESSION['error']);
+}
+if (isset($_SESSION['success'])) {
+    unset($_SESSION['success']);
+}
 ?>
 
 <div class="container">
