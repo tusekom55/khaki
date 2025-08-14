@@ -1404,42 +1404,66 @@ function formatTurkishNumber($number, $decimals = 2) {
  * Execute simple trade based on trading currency parameter
  */
 function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price) {
+    error_log("executeSimpleTrade START: user_id=$user_id, symbol=$symbol, action=$action, usd_amount=$usd_amount, usd_price=$usd_price");
+    
     $database = new Database();
     $db = $database->getConnection();
     
+    if (!$db) {
+        error_log("executeSimpleTrade FAIL: Database connection failed");
+        return false;
+    }
+    
     try {
-        $db->beginTransaction();
+        $transaction_result = $db->beginTransaction();
+        error_log("executeSimpleTrade: beginTransaction result = " . ($transaction_result ? 'SUCCESS' : 'FAILED'));
         
         // Get trading currency setting (1=TL, 2=USD)
         $trading_currency = getTradingCurrency();
+        error_log("executeSimpleTrade: trading_currency = $trading_currency");
         
         if ($trading_currency == 1) { // TL Mode
+            error_log("executeSimpleTrade: TL Mode");
+            
             // Convert USD to TL
             $usd_to_tl_rate = getUSDTRYRate();
             $tl_amount = $usd_amount * $usd_to_tl_rate;
             $fee_tl = $tl_amount * 0.001; // 0.1% fee
             $total_tl = $tl_amount + $fee_tl;
             
+            error_log("executeSimpleTrade TL: rate=$usd_to_tl_rate, tl_amount=$tl_amount, fee_tl=$fee_tl, total_tl=$total_tl");
+            
             if ($action == 'buy') {
+                error_log("executeSimpleTrade: BUY action");
+                
                 // Check TL balance
                 $tl_balance = getUserBalance($user_id, 'tl');
+                error_log("executeSimpleTrade BUY: tl_balance=$tl_balance, required=$total_tl");
+                
                 if ($tl_balance < $total_tl) {
+                    error_log("executeSimpleTrade BUY FAIL: Insufficient balance");
                     $db->rollback();
                     return false;
                 }
                 
                 // Deduct TL from user balance
                 $balance_update = updateUserBalance($user_id, 'tl', $total_tl, 'subtract');
+                error_log("executeSimpleTrade BUY: balance_update result = " . ($balance_update ? 'SUCCESS' : 'FAILED'));
+                
                 if (!$balance_update) {
+                    error_log("executeSimpleTrade BUY FAIL: Balance update failed");
                     $db->rollback();
                     return false;
                 }
                 
-                // Record transaction in TL
-                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                // Record transaction in TL - but without currency column (might not exist)
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl]);
+                error_log("executeSimpleTrade BUY: transaction_insert result = " . ($transaction_insert ? 'SUCCESS' : 'FAILED'));
+                
                 if (!$transaction_insert) {
+                    error_log("executeSimpleTrade BUY FAIL: Transaction insert failed");
                     $db->rollback();
                     return false;
                 }

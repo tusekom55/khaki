@@ -50,8 +50,21 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
     if ($current_market && $usd_amount > 0) {
         $usd_price = (float)$current_market['price'];
         
+        // Başlangıç bilgilerini topla
+        $debug_info = [];
+        $debug_info[] = "User ID: " . $_SESSION['user_id'];
+        $debug_info[] = "Symbol: " . $symbol;
+        $debug_info[] = "Action: " . $trade_action;
+        $debug_info[] = "USD Amount: " . $usd_amount;
+        $debug_info[] = "USD Price: " . $usd_price;
+        $debug_info[] = "Trading Currency: " . getTradingCurrency();
+        $debug_info[] = "TL Balance: " . getUserBalance($_SESSION['user_id'], 'tl');
+        $debug_info[] = "USD Balance: " . getUserBalance($_SESSION['user_id'], 'usd');
+        
         // Execute simple trade
-        if (executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price)) {
+        $trade_result = executeSimpleTrade($_SESSION['user_id'], $symbol, $trade_action, $usd_amount, $usd_price);
+        
+        if ($trade_result) {
             // Clear any existing error messages first
             unset($_SESSION['trade_error']);
             
@@ -62,8 +75,56 @@ if ($_POST && isset($_POST['trade_action']) && isLoggedIn()) {
             // Clear any existing success messages first
             unset($_SESSION['trade_success']);
             
-            $_SESSION['trade_error'] = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
-            header('Location: markets.php?group=' . $category);
+            // Debug ekranı göster
+            echo "<div style='position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999999; color: white; font-family: monospace; font-size: 14px; padding: 20px; overflow-y: auto;'>";
+            echo "<h2 style='color: #ff6b6b;'>🔍 TRADE DEBUG - İşlem Başarısız</h2>";
+            echo "<button onclick='this.parentElement.style.display=\"none\"' style='position: absolute; top: 10px; right: 10px; background: #ff6b6b; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;'>KAPAT</button>";
+            
+            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+            echo "<h3 style='color: #63b3ed;'>📊 İşlem Detayları:</h3>";
+            foreach($debug_info as $info) {
+                echo $info . "<br>";
+            }
+            echo "</div>";
+            
+            // Hesaplama kontrolü
+            $trading_currency = getTradingCurrency();
+            if ($trading_currency == 1) {
+                $usd_to_tl_rate = getUSDTRYRate();
+                $tl_amount = $usd_amount * $usd_to_tl_rate;
+                $fee_tl = $tl_amount * 0.001;
+                $total_tl = $tl_amount + $fee_tl;
+                $tl_balance = getUserBalance($_SESSION['user_id'], 'tl');
+                
+                echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+                echo "<h3 style='color: #68d391;'>💰 TL Mode Hesaplama:</h3>";
+                echo "USD/TRY Rate: " . $usd_to_tl_rate . "<br>";
+                echo "TL Amount: " . $tl_amount . "<br>";
+                echo "Fee TL: " . $fee_tl . "<br>";
+                echo "Total TL: " . $total_tl . "<br>";
+                echo "TL Balance: " . $tl_balance . "<br>";
+                echo "Balance Check: " . ($tl_balance >= $total_tl ? "✅ YETER" : "❌ YETMİYOR") . "<br>";
+                echo "</div>";
+            }
+            
+            echo "<div style='background: #1a202c; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+            echo "<h3 style='color: #fc8181;'>🎯 Muhtemel Sorunlar:</h3>";
+            echo "1. Database connection problemi<br>";
+            echo "2. Transaction başlatma hatası<br>";
+            echo "3. Balance update fonksiyonu çalışmıyor<br>";
+            echo "4. SQL insert hatası<br>";
+            echo "5. Commit işlemi başarısız<br>";
+            echo "</div>";
+            
+            echo "<div style='background: #2d3748; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
+            echo "<h3 style='color: #ed8936;'>🔧 Çözüm:</h3>";
+            echo "Bu debug bilgileriyle sorunu tespit edebiliriz.<br>";
+            echo "Function'ların tek tek test edilmesi gerekiyor.<br>";
+            echo "</div>";
+            
+            echo "</div>";
+            
+            // Normal error message'ı set etmeyelim, debug ekranı gösterelim
             exit();
         }
     } else {
@@ -116,11 +177,26 @@ if (isset($_SESSION['trade_error'])) {
     unset($_SESSION['trade_error']);
 }
 
-// Clear ALL possible leftover session messages
-$old_error_keys = ['error', 'success', 'message', 'alert', 'notification', 'trade_message', 'status_message'];
-foreach($old_error_keys as $key) {
+// AGGRESSIVE SESSION CLEANING - Tüm muhtemel error mesajlarını temizle
+$all_message_keys = [
+    'error', 'success', 'message', 'alert', 'notification', 'trade_message', 'status_message',
+    'trade_error', 'trade_success', 'balance_error', 'insufficient_balance', 'transaction_error',
+    'system_error', 'warning', 'info', 'flash_message', 'user_message', 'temp_message',
+    'modal_error', 'form_error', 'validation_error', 'payment_error', 'wallet_error'
+];
+
+foreach($all_message_keys as $key) {
     if (isset($_SESSION[$key])) {
         unset($_SESSION[$key]);
+    }
+}
+
+// Clear any session key that contains 'error', 'message', or 'alert'
+foreach($_SESSION as $session_key => $session_value) {
+    if (strpos(strtolower($session_key), 'error') !== false || 
+        strpos(strtolower($session_key), 'message') !== false || 
+        strpos(strtolower($session_key), 'alert') !== false) {
+        unset($_SESSION[$session_key]);
     }
 }
 ?>
