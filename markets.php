@@ -76,12 +76,48 @@ if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
         }
     }
     
+    echo "<div style='position: fixed; top: 270px; left: 0; right: 0; background: blue; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+    echo "🔍 MARKET SEARCH DEBUG:\n";
+    echo "Symbol to find: " . $symbol . "\n";
+    echo "Available markets: " . count($markets) . "\n";
+    echo "Market found: " . ($current_market ? 'YES' : 'NO') . "\n";
+    if ($current_market) {
+        echo "Market price: " . $current_market['price'] . "\n";
+    } else {
+        echo "First 3 symbols in markets: ";
+        for ($i = 0; $i < min(3, count($markets)); $i++) {
+            echo $markets[$i]['symbol'] . ' ';
+        }
+        echo "\n";
+    }
+    echo "Amount: " . $amount . "\n";
+    echo "</div>";
+    echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: blue\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
+    
     if ($current_market && $amount > 0) {
         $price_usd = (float)$current_market['price'];
+        
+        echo "<div style='position: fixed; top: 350px; left: 0; right: 0; background: purple; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+        echo "💰 EXECUTING TRADE:\n";
+        echo "User ID: " . $_SESSION['user_id'] . "\n";
+        echo "Symbol: " . $symbol . "\n";
+        echo "Action: " . $modal_action . "\n";
+        echo "Amount: " . $amount . "\n";
+        echo "Price USD: " . $price_usd . "\n";
+        echo "Leverage: " . $leverage . "\n";
+        echo "</div>";
+        echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: purple\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
         
         // Execute trade using parametric system
         if (executeTradeParametric($_SESSION['user_id'], $symbol, $modal_action, $amount, $price_usd, $leverage, $is_leverage_trade)) {
             $success = getCurrentLang() == 'tr' ? 'İşlem başarıyla gerçekleştirildi!' : 'Trade executed successfully!';
+            
+            echo "<div style='position: fixed; top: 430px; left: 0; right: 0; background: darkgreen; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+            echo "✅ TRADE SUCCESS!\n";
+            echo "Balance will be refreshed...\n";
+            echo "</div>";
+            echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: darkgreen\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
+            
             // Refresh user balances
             $user_balances = [
                 'primary' => getUserBalance($_SESSION['user_id'], $currency_field),
@@ -92,7 +128,20 @@ if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
             ];
         } else {
             $error = getCurrentLang() == 'tr' ? 'İşlem gerçekleştirilemedi. Bakiye yetersiz.' : 'Trade failed. Insufficient balance.';
+            
+            echo "<div style='position: fixed; top: 430px; left: 0; right: 0; background: darkred; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+            echo "❌ TRADE FAILED!\n";
+            echo "Error: " . $error . "\n";
+            echo "</div>";
+            echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: darkred\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
         }
+    } else {
+        echo "<div style='position: fixed; top: 350px; left: 0; right: 0; background: orange; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+        echo "⚠️ TRADE BLOCKED!\n";
+        echo "Market found: " . ($current_market ? 'YES' : 'NO') . "\n";
+        echo "Amount > 0: " . ($amount > 0 ? 'YES' : 'NO') . "\n";
+        echo "</div>";
+        echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: orange\"]'); if(el) el.style.display = 'none'; }, 8000);</script>";
     }
 }
 
