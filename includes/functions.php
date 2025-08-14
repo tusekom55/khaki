@@ -1404,26 +1404,26 @@ function formatTurkishNumber($number, $decimals = 2) {
  * Execute simple trade based on trading currency parameter
  */
 function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price) {
-    error_log("executeSimpleTrade START: user_id=$user_id, symbol=$symbol, action=$action, usd_amount=$usd_amount, usd_price=$usd_price");
+    echo "<script>console.log('executeSimpleTrade START: user_id=$user_id, symbol=$symbol, action=$action, usd_amount=$usd_amount, usd_price=$usd_price');</script>";
     
     $database = new Database();
     $db = $database->getConnection();
     
     if (!$db) {
-        error_log("executeSimpleTrade FAIL: Database connection failed");
+        echo "<script>console.log('executeSimpleTrade FAIL: Database connection failed');</script>";
         return false;
     }
     
     try {
         $transaction_result = $db->beginTransaction();
-        error_log("executeSimpleTrade: beginTransaction result = " . ($transaction_result ? 'SUCCESS' : 'FAILED'));
+        echo "<script>console.log('executeSimpleTrade: beginTransaction result = " . ($transaction_result ? 'SUCCESS' : 'FAILED') . "');</script>";
         
         // Get trading currency setting (1=TL, 2=USD)
         $trading_currency = getTradingCurrency();
-        error_log("executeSimpleTrade: trading_currency = $trading_currency");
+        echo "<script>console.log('executeSimpleTrade: trading_currency = $trading_currency');</script>";
         
         if ($trading_currency == 1) { // TL Mode
-            error_log("executeSimpleTrade: TL Mode");
+            echo "<script>console.log('executeSimpleTrade: TL Mode');</script>";
             
             // Convert USD to TL
             $usd_to_tl_rate = getUSDTRYRate();
@@ -1431,39 +1431,39 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
             $fee_tl = $tl_amount * 0.001; // 0.1% fee
             $total_tl = $tl_amount + $fee_tl;
             
-            error_log("executeSimpleTrade TL: rate=$usd_to_tl_rate, tl_amount=$tl_amount, fee_tl=$fee_tl, total_tl=$total_tl");
+            echo "<script>console.log('executeSimpleTrade TL: rate=$usd_to_tl_rate, tl_amount=$tl_amount, fee_tl=$fee_tl, total_tl=$total_tl');</script>";
             
             if ($action == 'buy') {
-                error_log("executeSimpleTrade: BUY action");
+                echo "<script>console.log('executeSimpleTrade: BUY action');</script>";
                 
                 // Check TL balance
                 $tl_balance = getUserBalance($user_id, 'tl');
-                error_log("executeSimpleTrade BUY: tl_balance=$tl_balance, required=$total_tl");
+                echo "<script>console.log('executeSimpleTrade BUY: tl_balance=$tl_balance, required=$total_tl');</script>";
                 
                 if ($tl_balance < $total_tl) {
-                    error_log("executeSimpleTrade BUY FAIL: Insufficient balance");
+                    echo "<script>console.log('executeSimpleTrade BUY FAIL: Insufficient balance');</script>";
                     $db->rollback();
                     return false;
                 }
                 
                 // Deduct TL from user balance
                 $balance_update = updateUserBalance($user_id, 'tl', $total_tl, 'subtract');
-                error_log("executeSimpleTrade BUY: balance_update result = " . ($balance_update ? 'SUCCESS' : 'FAILED'));
+                echo "<script>console.log('executeSimpleTrade BUY: balance_update result = " . ($balance_update ? 'SUCCESS' : 'FAILED') . "');</script>";
                 
                 if (!$balance_update) {
-                    error_log("executeSimpleTrade BUY FAIL: Balance update failed");
+                    echo "<script>console.log('executeSimpleTrade BUY FAIL: Balance update failed');</script>";
                     $db->rollback();
                     return false;
                 }
                 
-                // Record transaction in TL - but without currency column (might not exist)
+                // Record transaction in TL - without currency column for compatibility
                 $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
                 $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl]);
-                error_log("executeSimpleTrade BUY: transaction_insert result = " . ($transaction_insert ? 'SUCCESS' : 'FAILED'));
+                echo "<script>console.log('executeSimpleTrade BUY: transaction_insert result = " . ($transaction_insert ? 'SUCCESS' : 'FAILED') . "');</script>";
                 
                 if (!$transaction_insert) {
-                    error_log("executeSimpleTrade BUY FAIL: Transaction insert failed");
+                    echo "<script>console.log('executeSimpleTrade BUY FAIL: Transaction insert failed');</script>";
                     $db->rollback();
                     return false;
                 }
@@ -1477,9 +1477,9 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
                     return false;
                 }
                 
-                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl, 'TL']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $tl_amount, $fee_tl]);
                 if (!$transaction_insert) {
                     $db->rollback();
                     return false;
@@ -1487,34 +1487,53 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
             }
             
         } else { // USD Mode
+            echo "<script>console.log('executeSimpleTrade: USD Mode');</script>";
             $fee_usd = $usd_amount * 0.001; // 0.1% fee
             $total_usd = $usd_amount + $fee_usd;
             
+            echo "<script>console.log('executeSimpleTrade USD: usd_amount=$usd_amount, fee_usd=$fee_usd, total_usd=$total_usd');</script>";
+            
             if ($action == 'buy') {
+                echo "<script>console.log('executeSimpleTrade: BUY action in USD mode');</script>";
+                
                 // Check USD balance
                 $usd_balance = getUserBalance($user_id, 'usd');
+                echo "<script>console.log('executeSimpleTrade USD BUY: usd_balance=$usd_balance, required=$total_usd');</script>";
+                
                 if ($usd_balance < $total_usd) {
+                    echo "<script>console.log('executeSimpleTrade USD BUY FAIL: Insufficient balance');</script>";
                     $db->rollback();
                     return false;
                 }
+                
+                echo "<script>console.log('executeSimpleTrade USD BUY: Balance sufficient, proceeding...');</script>";
                 
                 // Deduct USD from user balance
                 $balance_update = updateUserBalance($user_id, 'usd', $total_usd, 'subtract');
+                echo "<script>console.log('executeSimpleTrade USD BUY: balance_update result = " . ($balance_update ? 'SUCCESS' : 'FAILED') . "');</script>";
+                
                 if (!$balance_update) {
+                    echo "<script>console.log('executeSimpleTrade USD BUY FAIL: Balance update failed');</script>";
                     $db->rollback();
                     return false;
                 }
                 
-                // Record transaction in USD
-                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                // Record transaction in USD - without currency column for compatibility  
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                echo "<script>console.log('executeSimpleTrade USD BUY: Executing SQL insert...');</script>";
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd]);
+                echo "<script>console.log('executeSimpleTrade USD BUY: transaction_insert result = " . ($transaction_insert ? 'SUCCESS' : 'FAILED') . "');</script>";
+                
                 if (!$transaction_insert) {
+                    echo "<script>console.log('executeSimpleTrade USD BUY FAIL: Transaction insert failed');</script>";
                     $db->rollback();
                     return false;
                 }
                 
             } else { // sell
+                echo "<script>console.log('executeSimpleTrade: SELL action in USD mode');</script>";
+                
                 // Add USD to balance (minus fee)
                 $balance_update = updateUserBalance($user_id, 'usd', $usd_amount - $fee_usd, 'add');
                 if (!$balance_update) {
@@ -1522,9 +1541,9 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
                     return false;
                 }
                 
-                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($query);
-                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd, 'USD']);
+                $transaction_insert = $stmt->execute([$user_id, $action, $symbol, $usd_amount, $usd_price, $usd_amount, $fee_usd]);
                 if (!$transaction_insert) {
                     $db->rollback();
                     return false;
@@ -1532,12 +1551,15 @@ function executeSimpleTrade($user_id, $symbol, $action, $usd_amount, $usd_price)
             }
         }
         
+        echo "<script>console.log('executeSimpleTrade: About to commit transaction...');</script>";
         $commit_result = $db->commit();
+        echo "<script>console.log('executeSimpleTrade: commit result = " . ($commit_result ? 'SUCCESS' : 'FAILED') . "');</script>";
+        echo "<script>console.log('executeSimpleTrade: RETURNING " . ($commit_result ? 'TRUE' : 'FALSE') . "');</script>";
         return $commit_result;
         
     } catch (Exception $e) {
+        echo "<script>console.log('executeSimpleTrade: Exception caught - " . addslashes($e->getMessage()) . "');</script>";
         $db->rollback();
-        error_log("executeSimpleTrade error: " . $e->getMessage());
         return false;
     }
 }
