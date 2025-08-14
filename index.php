@@ -47,9 +47,13 @@ $markets = getMarketData('us_stocks', 6);
 
         /* ===== NAVIGATION FIXES ===== */
         .navbar {
-            position: relative !important;
-            z-index: 1000 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 9999 !important;
             background-color: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
         }
         
         .navbar-nav .nav-link {
@@ -88,6 +92,7 @@ $markets = getMarketData('us_stocks', 6);
             height: 100vh !important;
             overflow: hidden !important;
             background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #0f1419 100%) !important;
+            margin-top: 76px; /* Push down to avoid navbar */
         }
 
         .slider-container {
