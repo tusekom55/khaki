@@ -34,17 +34,27 @@ if (isLoggedIn()) {
 
 // Debug POST data always (even if conditions not met)
 if ($_POST) {
-    echo "<div style='position: fixed; top: 0; left: 0; background: red; color: white; padding: 10px; z-index: 9999;'>";
-    echo "POST DATA RECEIVED: " . print_r($_POST, true);
+    echo "<div style='position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 99999; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto;'>";
+    echo "🔴 POST DATA RECEIVED:\n" . print_r($_POST, true);
+    echo "\n👤 USER LOGGED IN: " . (isLoggedIn() ? 'YES (ID: ' . $_SESSION['user_id'] . ')' : 'NO');
+    echo "\n💰 TL BALANCE: " . (isLoggedIn() ? getUserBalance($_SESSION['user_id'], 'tl') : 'N/A');
+    echo "\n🔗 REQUEST URI: " . $_SERVER['REQUEST_URI'];
     echo "</div>";
+    
+    // 10 saniye sonra otomatik gizle
+    echo "<script>setTimeout(function(){ document.querySelector('div[style*=\"background: red\"]').style.display = 'none'; }, 10000);</script>";
+    
     error_log("ALL POST DEBUG: " . print_r($_POST, true));
 }
 
 // Handle modal trading form submission
 if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
-    echo "<div style='position: fixed; top: 50px; left: 0; background: green; color: white; padding: 10px; z-index: 9999;'>";
-    echo "TRADE FORM PROCESSING...";
+    echo "<div style='position: fixed; top: 220px; left: 0; right: 0; background: green; color: white; padding: 15px; z-index: 99999; font-family: monospace;'>";
+    echo "✅ TRADE FORM PROCESSING...";
     echo "</div>";
+    
+    // 5 saniye sonra otomatik gizle
+    echo "<script>setTimeout(function(){ var el = document.querySelector('div[style*=\"background: green\"]'); if(el) el.style.display = 'none'; }, 5000);</script>";
     
     // Debug POST data
     error_log("FORM POST DEBUG: " . print_r($_POST, true));
