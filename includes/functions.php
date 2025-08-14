@@ -1249,6 +1249,10 @@ function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd, $
         $total_usd = $amount * $price_usd;
         $fee_usd = $total_usd * (TRADING_FEE / 100);
         
+        // Debug logging
+        error_log("TRADE DEBUG: user_id=$user_id, symbol=$symbol, type=$type, amount=$amount, price_usd=$price_usd");
+        error_log("TRADE DEBUG: trading_currency=$trading_currency, total_usd=$total_usd, fee_usd=$fee_usd");
+        
         if ($trading_currency == 1) { // TL mode
             // Convert to TL
             $usd_to_tl_rate = getUSDTRYRate();
@@ -1256,11 +1260,15 @@ function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd, $
             $fee_tl = $fee_usd * $usd_to_tl_rate;
             $total_with_fee = $total_tl + $fee_tl;
             
+            error_log("TRADE DEBUG TL MODE: usd_to_tl_rate=$usd_to_tl_rate, total_tl=$total_tl, fee_tl=$fee_tl, total_with_fee=$total_with_fee");
+            
             if ($type == 'buy') {
                 // Check TL balance
                 $balance = getUserBalance($user_id, 'tl');
+                error_log("TRADE DEBUG BUY: current_tl_balance=$balance, required=$total_with_fee");
+                
                 if ($balance < $total_with_fee) {
-                    throw new Exception('Insufficient TL balance');
+                    throw new Exception("Insufficient TL balance. Have: $balance TL, Need: $total_with_fee TL");
                 }
                 
                 // Deduct TL, add crypto

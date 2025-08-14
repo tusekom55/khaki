@@ -34,11 +34,16 @@ if (isLoggedIn()) {
 
 // Handle modal trading form submission
 if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
+    // Debug POST data
+    error_log("FORM POST DEBUG: " . print_r($_POST, true));
+    
     $modal_action = $_POST['modal_action']; // 'buy', 'sell', or 'leverage'
     $symbol = $_POST['symbol'] ?? '';
     $amount = (float)($_POST['amount'] ?? 0);
     $leverage = (int)($_POST['leverage'] ?? 1);
     $is_leverage_trade = ($_POST['trade_type'] ?? '') === 'leverage';
+    
+    error_log("FORM PARSED: action=$modal_action, symbol=$symbol, amount=$amount, leverage=$leverage, is_leverage=$is_leverage_trade");
     
     // Get market data for this symbol
     $current_market = null;
