@@ -32,8 +32,20 @@ if (isLoggedIn()) {
     ];
 }
 
+// Debug POST data always (even if conditions not met)
+if ($_POST) {
+    echo "<div style='position: fixed; top: 0; left: 0; background: red; color: white; padding: 10px; z-index: 9999;'>";
+    echo "POST DATA RECEIVED: " . print_r($_POST, true);
+    echo "</div>";
+    error_log("ALL POST DEBUG: " . print_r($_POST, true));
+}
+
 // Handle modal trading form submission
 if ($_POST && isset($_POST['modal_action']) && isLoggedIn()) {
+    echo "<div style='position: fixed; top: 50px; left: 0; background: green; color: white; padding: 10px; z-index: 9999;'>";
+    echo "TRADE FORM PROCESSING...";
+    echo "</div>";
+    
     // Debug POST data
     error_log("FORM POST DEBUG: " . print_r($_POST, true));
     
