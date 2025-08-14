@@ -45,6 +45,37 @@ $markets = getMarketData('us_stocks', 6);
             overflow-x: hidden;
         }
 
+        /* ===== NAVIGATION FIXES ===== */
+        .navbar {
+            position: relative !important;
+            z-index: 1000 !important;
+            background-color: #ffffff !important;
+        }
+        
+        .navbar-nav .nav-link {
+            position: relative !important;
+            z-index: 1001 !important;
+            pointer-events: auto !important;
+        }
+        
+        .navbar-brand {
+            position: relative !important;
+            z-index: 1001 !important;
+            pointer-events: auto !important;
+        }
+        
+        .btn-outline-primary, .btn-primary {
+            position: relative !important;
+            z-index: 1001 !important;
+            pointer-events: auto !important;
+        }
+        
+        .language-switcher a {
+            position: relative !important;
+            z-index: 1001 !important;
+            pointer-events: auto !important;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -205,12 +236,13 @@ $markets = getMarketData('us_stocks', 6);
             text-transform: none;
             letter-spacing: 0.5px;
             position: relative;
-            z-index: 10;
+            z-index: 100;
             box-shadow: 
                 0 12px 30px rgba(59, 130, 246, 0.4),
                 0 6px 15px rgba(59, 130, 246, 0.2);
             display: inline-block;
             text-decoration: none;
+            pointer-events: auto;
         }
 
         .btn-cta:hover {
@@ -697,6 +729,9 @@ $markets = getMarketData('us_stocks', 6);
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 100;
+            pointer-events: auto;
         }
 
         .light-card .promo-btn {
