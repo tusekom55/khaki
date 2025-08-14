@@ -212,9 +212,10 @@ body {
 
 .ticker-track {
     display: flex !important;
-    animation: simple-scroll 20s linear infinite !important;
+    animation: ticker 30s linear infinite !important;
+    gap: 2rem !important;
     white-space: nowrap !important;
-    width: 4000px !important;
+    width: auto !important;
     animation-delay: 0s !important;
     will-change: transform !important;
 }
@@ -325,6 +326,11 @@ body {
     font-size: 0.9rem;
     color: #666;
     font-weight: 400;
+}
+
+@keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 @keyframes simple-scroll {
