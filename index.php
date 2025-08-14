@@ -28,82 +28,41 @@ $markets = getMarketData('us_stocks', 6);
     <link href="assets/css/landing-index.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation - Direct Integration -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm" style="z-index: 10000 !important;">
+    <!-- ULTRA SIMPLE NAVBAR -->
+    <div style="position: fixed; top: 0; left: 0; right: 0; background: white; z-index: 999999; padding: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="index.php" style="font-size: 1.5rem; z-index: 10001 !important; position: relative;">
-                <i class="fas fa-chart-line me-2"></i><?php echo SITE_NAME; ?>
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="z-index: 10001 !important;">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active bg-primary text-white rounded' : 'text-dark'; ?>" href="index.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
-                            <i class="fas fa-home me-1"></i><?php echo getCurrentLang() == 'tr' ? 'Ana Sayfa' : 'Home'; ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium text-dark" href="markets.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
-                            <i class="fas fa-chart-bar me-1"></i><?php echo t('markets'); ?>
-                        </a>
-                    </li>
-                    <?php if (isLoggedIn()): ?>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium text-dark" href="trading.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
-                            <i class="fas fa-exchange-alt me-1"></i><?php echo t('trading'); ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium text-dark" href="wallet.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
-                            <i class="fas fa-wallet me-1"></i><?php echo t('wallet'); ?>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium text-dark" href="profile.php" style="z-index: 10001 !important; position: relative; padding: 0.5rem 1rem;">
-                            <i class="fas fa-user me-1"></i><?php echo t('profile'); ?>
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-                
-                <div class="d-flex align-items-center">
-                    <!-- Language Switcher -->
-                    <div class="me-3" style="z-index: 10001 !important; position: relative;">
-                        <a href="?lang=tr" class="btn btn-sm <?php echo getCurrentLang() == 'tr' ? 'btn-primary' : 'btn-outline-secondary'; ?> me-1">TR</a>
-                        <a href="?lang=en" class="btn btn-sm <?php echo getCurrentLang() == 'en' ? 'btn-primary' : 'btn-outline-secondary'; ?>">EN</a>
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <a href="index.php" style="text-decoration: none; color: #007bff; font-weight: bold; font-size: 18px;">
+                        📈 <?php echo SITE_NAME; ?>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="index.php" style="text-decoration: none; color: #333; padding: 8px 16px; background: #f8f9fa; border-radius: 5px;">Ana Sayfa</a>
+                        <a href="markets.php" style="text-decoration: none; color: #333; padding: 8px 16px; background: #f8f9fa; border-radius: 5px;">Piyasalar</a>
+                        <?php if (isLoggedIn()): ?>
+                        <a href="trading.php" style="text-decoration: none; color: #333; padding: 8px 16px; background: #f8f9fa; border-radius: 5px;">Trading</a>
+                        <a href="wallet.php" style="text-decoration: none; color: #333; padding: 8px 16px; background: #f8f9fa; border-radius: 5px;">Cüzdan</a>
+                        <a href="profile.php" style="text-decoration: none; color: #333; padding: 8px 16px; background: #f8f9fa; border-radius: 5px;">Profil</a>
+                        <?php endif; ?>
                     </div>
-                    
-                    <?php if (isLoggedIn()): ?>
-                        <!-- User Balance -->
-                        <div class="me-3">
-                            <small class="text-muted"><?php echo t('balance'); ?>:</small>
-                            <strong class="text-success"><?php echo getFormattedHeaderBalance($_SESSION['user_id']); ?></strong>
-                        </div>
-                        
-                        <!-- User Menu -->
-                        <div class="dropdown">
-                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="z-index: 10001 !important; position: relative;">
-                                <i class="fas fa-user me-1"></i><?php echo $_SESSION['username']; ?>
-                            </button>
-                            <ul class="dropdown-menu" style="z-index: 10002 !important;">
-                                <li><a class="dropdown-item" href="profile.php"><i class="fas fa-user me-2"></i><?php echo t('profile'); ?></a></li>
-                                <li><a class="dropdown-item" href="wallet.php"><i class="fas fa-wallet me-2"></i><?php echo t('wallet'); ?></a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i><?php echo t('logout'); ?></a></li>
-                            </ul>
-                        </div>
-                    <?php else: ?>
-                        <a href="login.php" class="btn btn-outline-primary me-2" style="z-index: 10001 !important; position: relative;"><?php echo t('login'); ?></a>
-                        <a href="register.php" class="btn btn-primary" style="z-index: 10001 !important; position: relative;"><?php echo t('register'); ?></a>
-                    <?php endif; ?>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="?lang=tr" style="text-decoration: none; padding: 5px 10px; background: <?php echo getCurrentLang() == 'tr' ? '#007bff' : '#f8f9fa'; ?>; color: <?php echo getCurrentLang() == 'tr' ? 'white' : '#333'; ?>; border-radius: 3px; font-size: 12px;">TR</a>
+                        <a href="?lang=en" style="text-decoration: none; padding: 5px 10px; background: <?php echo getCurrentLang() == 'en' ? '#007bff' : '#f8f9fa'; ?>; color: <?php echo getCurrentLang() == 'en' ? 'white' : '#333'; ?>; border-radius: 3px; font-size: 12px;">EN</a>
+                        <?php if (!isLoggedIn()): ?>
+                        <a href="login.php" style="text-decoration: none; color: #007bff; padding: 8px 16px; border: 1px solid #007bff; border-radius: 5px; margin-left: 10px;">Giriş</a>
+                        <a href="register.php" style="text-decoration: none; color: white; padding: 8px 16px; background: #007bff; border-radius: 5px;">Kayıt</a>
+                        <?php else: ?>
+                        <a href="logout.php" style="text-decoration: none; color: #dc3545; padding: 8px 16px; border: 1px solid #dc3545; border-radius: 5px;">Çıkış</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
 
     <!-- Hero Slider -->
     <section class="hero-slider" id="hero">
