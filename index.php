@@ -243,177 +243,135 @@ $markets = getMarketData('us_stocks', 6);
         <div class="slider-progress" id="sliderProgress"></div>
     </section>
 
-    <!-- US Stocks Ticker -->
-    <section class="coin-ticker" id="coin-ticker">
-        <div class="ticker-header">
-            <h2><?php echo getCurrentLang() == 'tr' ? 'Amerika\'nın en büyük şirketlerine yatırım yapın' : 'Invest in America\'s largest companies'; ?></h2>
-        </div>
-        <div class="ticker-container">
-            <div class="ticker-track" style="display: flex; animation: ticker 30s linear infinite; gap: 2rem; width: max-content;">
-                <!-- First set of US Stocks -->
-                <div class="coin-item">
-                    <div class="coin-flag">🍎</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">AAPL</div>
-                        <div class="coin-name">Apple Inc.</div>
+    <!-- PURE INLINE TICKER SECTION -->
+    <section style="background: #1a1a1a; padding: 60px 0; overflow: hidden;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="color: #fff; font-size: 2rem; font-weight: 600; margin: 0;">
+                    <?php echo getCurrentLang() == 'tr' ? 'Amerika\'nın en büyük şirketlerine yatırım yapın' : 'Invest in America\'s largest companies'; ?>
+                </h2>
+            </div>
+            
+            <div style="overflow: hidden; position: relative; mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent); -webkit-mask: linear-gradient(90deg, transparent, white 10%, white 90%, transparent);">
+                <div style="display: flex; animation: stockTicker 30s linear infinite; gap: 30px; width: max-content;" onmouseover="this.style.animationPlayState='paused'" onmouseout="this.style.animationPlayState='running'">
+                    
+                    <!-- Apple -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #000, #333); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">🍎</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">AAPL</div>
+                        <div style="font-size: 0.9rem; color: #666;">Apple Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🪟</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">MSFT</div>
-                        <div class="coin-name">Microsoft</div>
+                    
+                    <!-- Microsoft -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #0078d4, #005a9e); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">MS</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">MSFT</div>
+                        <div style="font-size: 0.9rem; color: #666;">Microsoft</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🔍</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">GOOGL</div>
-                        <div class="coin-name">Alphabet Inc.</div>
+                    
+                    <!-- Google -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">G</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">GOOGL</div>
+                        <div style="font-size: 0.9rem; color: #666;">Alphabet Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">📦</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">AMZN</div>
-                        <div class="coin-name">Amazon</div>
+                    
+                    <!-- Amazon -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #ff9900, #ff6600); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">📦</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">AMZN</div>
+                        <div style="font-size: 0.9rem; color: #666;">Amazon</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🚗</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">TSLA</div>
-                        <div class="coin-name">Tesla Inc.</div>
+                    
+                    <!-- Tesla -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #cc0000, #990000); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">⚡</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">TSLA</div>
+                        <div style="font-size: 0.9rem; color: #666;">Tesla Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">👥</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">META</div>
-                        <div class="coin-name">Meta Platforms</div>
+                    
+                    <!-- Meta -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #1877f2, #0d47a1); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">f</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">META</div>
+                        <div style="font-size: 0.9rem; color: #666;">Meta Platforms</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🎬</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">NFLX</div>
-                        <div class="coin-name">Netflix</div>
+                    
+                    <!-- Netflix -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #e50914, #b20710); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">N</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">NFLX</div>
+                        <div style="font-size: 0.9rem; color: #666;">Netflix</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">💳</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">V</div>
-                        <div class="coin-name">Visa Inc.</div>
+                    
+                    <!-- Visa -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #1a1f71, #0d1348); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">💳</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">V</div>
+                        <div style="font-size: 0.9rem; color: #666;">Visa Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🥤</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">KO</div>
-                        <div class="coin-name">Coca-Cola</div>
+                    
+                    <!-- Coca-Cola -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #fe0000, #cc0000); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">🥤</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">KO</div>
+                        <div style="font-size: 0.9rem; color: #666;">Coca-Cola</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🏦</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">JPM</div>
-                        <div class="coin-name">JPMorgan Chase</div>
+                    
+                    <!-- JPMorgan -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #005daa, #004080); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">🏦</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">JPM</div>
+                        <div style="font-size: 0.9rem; color: #666;">JPMorgan Chase</div>
                     </div>
-                </div>
-                
-                <!-- Duplicate set for seamless loop -->
-                <div class="coin-item">
-                    <div class="coin-flag">🍎</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">AAPL</div>
-                        <div class="coin-name">Apple Inc.</div>
+                    
+                    <!-- DUPLICATE SET FOR SEAMLESS LOOP -->
+                    
+                    <!-- Apple Duplicate -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #000, #333); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">🍎</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">AAPL</div>
+                        <div style="font-size: 0.9rem; color: #666;">Apple Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🪟</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">MSFT</div>
-                        <div class="coin-name">Microsoft</div>
+                    
+                    <!-- Microsoft Duplicate -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #0078d4, #005a9e); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">MS</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">MSFT</div>
+                        <div style="font-size: 0.9rem; color: #666;">Microsoft</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🔍</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">GOOGL</div>
-                        <div class="coin-name">Alphabet Inc.</div>
+                    
+                    <!-- Google Duplicate -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; font-weight: bold;">G</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">GOOGL</div>
+                        <div style="font-size: 0.9rem; color: #666;">Alphabet Inc.</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">📦</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">AMZN</div>
-                        <div class="coin-name">Amazon</div>
+                    
+                    <!-- Amazon Duplicate -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #ff9900, #ff6600); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">📦</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">AMZN</div>
+                        <div style="font-size: 0.9rem; color: #666;">Amazon</div>
                     </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🚗</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">TSLA</div>
-                        <div class="coin-name">Tesla Inc.</div>
-                    </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">👥</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">META</div>
-                        <div class="coin-name">Meta Platforms</div>
-                    </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🎬</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">NFLX</div>
-                        <div class="coin-name">Netflix</div>
-                    </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">💳</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">V</div>
-                        <div class="coin-name">Visa Inc.</div>
-                    </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🥤</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">KO</div>
-                        <div class="coin-name">Coca-Cola</div>
-                    </div>
-                </div>
-                
-                <div class="coin-item">
-                    <div class="coin-flag">🏦</div>
-                    <div class="coin-info">
-                        <div class="coin-symbol">JPM</div>
-                        <div class="coin-name">JPMorgan Chase</div>
+                    
+                    <!-- Tesla Duplicate -->
+                    <div style="flex-shrink: 0; background: white; border-radius: 15px; padding: 20px; min-width: 220px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 12px; background: linear-gradient(135deg, #cc0000, #990000); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; font-weight: bold;">⚡</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #000; margin-bottom: 4px;">TSLA</div>
+                        <div style="font-size: 0.9rem; color: #666;">Tesla Inc.</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    
+    <style>
+        @keyframes stockTicker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+    </style>
 
     <!-- Service Cards -->
     <section class="services" id="services">
