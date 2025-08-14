@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <?php endif; ?>
                                     
                                     <?php if (isLoggedIn()): ?>
-                                    <form id="buyForm" method="POST" action="">
+                                    <form id="buyForm" method="POST" action="markets.php?group=<?php echo $category; ?>">
                                         <input type="hidden" name="modal_action" value="buy">
                                         <input type="hidden" name="symbol" id="buySymbol" value="">
                                         <input type="hidden" name="trade_type" id="buyTradeType" value="">
