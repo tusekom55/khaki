@@ -15,6 +15,11 @@ define('FMP_REQUESTS_PER_DAY', 100); // Free plan limit
 define('PAPARA_API_KEY', 'demo_key');
 define('PAPARA_API_URL', 'https://merchant-api.papara.com');
 
+// Exchange Rate API (Free)
+define('EXCHANGE_API_URL', 'https://api.exchangerate-api.com/v4/latest/USD'); // Free, no key required
+define('EXCHANGE_API_BACKUP', 'https://api.fxapi.com/v1/latest?access_key=fxapi-key&base=USD&symbols=TRY'); // Backup API
+define('EXCHANGE_RATE_CACHE_TIME', 300); // 5 minutes cache
+
 // Site configuration
 define('SITE_NAME', 'GlobalBorsa');
 define('SITE_URL', 'http://localhost');

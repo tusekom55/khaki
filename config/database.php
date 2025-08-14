@@ -119,6 +119,22 @@ function createTables() {
     )";
     $db->exec($query);
     
+    // System parameters table
+    $query = "CREATE TABLE IF NOT EXISTS system_parameters (
+        parameter_name VARCHAR(50) PRIMARY KEY,
+        parameter_value VARCHAR(255) NOT NULL,
+        description TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )";
+    $db->exec($query);
+    
+    // Insert default parameters
+    $query = "INSERT IGNORE INTO system_parameters (parameter_name, parameter_value, description) VALUES 
+              ('trading_currency', '1', 'Base trading currency: 1=TL, 2=USD'),
+              ('usdtry_rate', '27.45', 'Current USD/TRY exchange rate'),
+              ('rate_last_update', '0', 'Last exchange rate update timestamp')";
+    $db->exec($query);
+    
     // Check if is_admin column exists, if not add it
     $query = "SHOW COLUMNS FROM users LIKE 'is_admin'";
     $stmt = $db->prepare($query);

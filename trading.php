@@ -21,14 +21,31 @@ if (!$market) {
 if ($_POST && isset($_POST['action'])) {
     $action = $_POST['action']; // 'buy' or 'sell'
     $amount = (float)($_POST['amount'] ?? 0);
-    $price = (float)($market['price']);
+    $price_usd = (float)($market['price']); // Market prices are always in USD
     
-    if ($amount < MIN_TRADE_AMOUNT / $price) {
-        $error = getCurrentLang() == 'tr' ? 
-            'Minimum işlem tutarı ' . MIN_TRADE_AMOUNT . ' TL' : 
-            'Minimum trade amount is ' . MIN_TRADE_AMOUNT . ' TL';
-    } else {
-        if (executeTrade($_SESSION['user_id'], $pair, $action, $amount, $price)) {
+    // Get minimum trade amount based on current currency setting
+    $min_trade_amount = getMinTradeAmount();
+    $trading_currency = getTradingCurrency();
+    
+    if ($trading_currency == 1) { // TL mode - check minimum in TL equivalent
+        $total_tl = convertUSDToTL($amount * $price_usd);
+        if ($total_tl < MIN_TRADE_AMOUNT) {
+            $error = getCurrentLang() == 'tr' ? 
+                'Minimum işlem tutarı ' . MIN_TRADE_AMOUNT . ' TL' : 
+                'Minimum trade amount is ' . MIN_TRADE_AMOUNT . ' TL';
+        }
+    } else { // USD mode - check minimum in USD
+        $total_usd = $amount * $price_usd;
+        $min_usd = MIN_TRADE_AMOUNT / getUSDTRYRate();
+        if ($total_usd < $min_usd) {
+            $error = getCurrentLang() == 'tr' ? 
+                'Minimum işlem tutarı $' . formatNumber($min_usd, 2) : 
+                'Minimum trade amount is $' . formatNumber($min_usd, 2);
+        }
+    }
+    
+    if (!$error) {
+        if (executeTradeParametric($_SESSION['user_id'], $pair, $action, $amount, $price_usd)) {
             $success = t('trade_success');
             // Refresh market data
             $market = getSingleMarket($pair);
@@ -40,9 +57,18 @@ if ($_POST && isset($_POST['action'])) {
 
 // Get user balances
 $user_id = $_SESSION['user_id'];
-$balance_tl = getUserBalance($user_id, 'tl');
+$trading_currency = getTradingCurrency();
+$currency_field = getCurrencyField($trading_currency);
+$currency_symbol = getCurrencySymbol($trading_currency);
+
+$balance_primary = getUserBalance($user_id, $currency_field); // TL or USD based on system setting
+$balance_tl = getUserBalance($user_id, 'tl'); // Keep for calculations
+$balance_usd = getUserBalance($user_id, 'usd'); // Keep for calculations
 $crypto_currency = strtolower(explode('_', $pair)[0]);
 $balance_crypto = getUserBalance($user_id, $crypto_currency);
+
+// Get current USD/TRY rate
+$usd_try_rate = getUSDTRYRate();
 
 // Get recent transactions
 $recent_trades = getUserTransactions($user_id, 10);
@@ -72,8 +98,21 @@ include 'includes/header.php';
                             </div>
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <div class="h2 mb-1"><?php echo formatPrice($market['price']); ?> TL</div>
+                            <?php 
+                            // Display price based on trading currency
+                            if ($trading_currency == 1) { // TL mode
+                                $display_price = convertUSDToTL($market['price']);
+                                $currency_display = 'TL';
+                            } else { // USD mode
+                                $display_price = $market['price'];
+                                $currency_display = 'USD';
+                            }
+                            ?>
+                            <div class="h2 mb-1"><?php echo formatPrice($display_price); ?> <?php echo $currency_display; ?></div>
                             <div><?php echo formatChange($market['change_24h']); ?></div>
+                            <?php if ($trading_currency == 1): ?>
+                            <small class="text-muted">Kur: 1 USD = <?php echo formatNumber($usd_try_rate, 2); ?> TL</small>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -157,19 +196,40 @@ include 'includes/header.php';
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><?php echo t('balance'); ?></h5>
+                    <small class="text-muted">
+                        <?php if ($trading_currency == 1): ?>
+                        Trading Currency: TL (Kur: <?php echo formatNumber($usd_try_rate, 2); ?>)
+                        <?php else: ?>
+                        Trading Currency: USD
+                        <?php endif; ?>
+                    </small>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-4">
                             <div class="text-center p-3 bg-light rounded">
-                                <div class="h6 mb-1"><?php echo formatNumber($balance_tl); ?></div>
-                                <small class="text-muted">TL</small>
+                                <div class="h6 mb-1"><?php echo formatNumber($balance_primary); ?></div>
+                                <small class="text-muted"><?php echo $currency_symbol; ?></small>
                             </div>
                         </div>
-                        <div class="col-6">
+                        <div class="col-4">
                             <div class="text-center p-3 bg-light rounded">
                                 <div class="h6 mb-1"><?php echo formatPrice($balance_crypto); ?></div>
                                 <small class="text-muted"><?php echo strtoupper($crypto_currency); ?></small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <?php 
+                                // Show balance in other currency for reference
+                                if ($trading_currency == 1) {
+                                    echo '<div class="h6 mb-1">' . formatNumber($balance_usd) . '</div>';
+                                    echo '<small class="text-muted">USD</small>';
+                                } else {
+                                    echo '<div class="h6 mb-1">' . formatNumber($balance_tl) . '</div>';
+                                    echo '<small class="text-muted">TL</small>';
+                                }
+                                ?>
                             </div>
                         </div>
                     </div>
@@ -216,7 +276,7 @@ include 'includes/header.php';
                                     <input type="number" class="form-control" name="amount" step="0.00000001" min="0" required>
                                     <small class="text-muted">
                                         <?php echo getCurrentLang() == 'tr' ? 'Mevcut fiyat:' : 'Current price:'; ?> 
-                                        <?php echo formatPrice($market['price']); ?> TL
+                                        <?php echo formatPrice($display_price); ?> <?php echo $currency_display; ?>
                                     </small>
                                 </div>
                                 
@@ -224,10 +284,12 @@ include 'includes/header.php';
                                     <label class="form-label"><?php echo getCurrentLang() == 'tr' ? 'Tahmini Tutar' : 'Estimated Total'; ?></label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="buyTotal" readonly>
-                                        <span class="input-group-text">TL</span>
+                                        <span class="input-group-text"><?php echo $currency_symbol; ?></span>
                                     </div>
                                     <small class="text-muted">
                                         <?php echo getCurrentLang() == 'tr' ? 'İşlem ücreti:' : 'Trading fee:'; ?> %<?php echo TRADING_FEE; ?>
+                                        <br><?php echo getCurrentLang() == 'tr' ? 'Kullanılacak bakiye:' : 'Will use balance:'; ?> 
+                                        <?php echo formatNumber($balance_primary); ?> <?php echo $currency_symbol; ?>
                                     </small>
                                 </div>
                                 
@@ -256,10 +318,12 @@ include 'includes/header.php';
                                     <label class="form-label"><?php echo getCurrentLang() == 'tr' ? 'Tahmini Tutar' : 'Estimated Total'; ?></label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="sellTotal" readonly>
-                                        <span class="input-group-text">TL</span>
+                                        <span class="input-group-text"><?php echo $currency_symbol; ?></span>
                                     </div>
                                     <small class="text-muted">
                                         <?php echo getCurrentLang() == 'tr' ? 'İşlem ücreti:' : 'Trading fee:'; ?> %<?php echo TRADING_FEE; ?>
+                                        <br><?php echo getCurrentLang() == 'tr' ? 'Alınacak tutar:' : 'Will receive:'; ?> 
+                                        <?php echo $currency_symbol; ?> cinsinden
                                     </small>
                                 </div>
                                 
@@ -276,35 +340,62 @@ include 'includes/header.php';
 </div>
 
 <script>
-const currentPrice = <?php echo $market['price']; ?>;
+const currentPriceUSD = <?php echo $market['price']; ?>; // Market price in USD
+const displayPrice = <?php echo $display_price; ?>; // Display price in current currency
 const tradingFee = <?php echo TRADING_FEE; ?> / 100;
+const tradingCurrency = <?php echo $trading_currency; ?>; // 1=TL, 2=USD
+const usdTryRate = <?php echo $usd_try_rate; ?>;
+const balancePrimary = <?php echo $balance_primary; ?>;
+const balanceCrypto = <?php echo $balance_crypto; ?>;
 
 // Calculate buy total
 document.querySelector('#buy input[name="amount"]').addEventListener('input', function() {
     const amount = parseFloat(this.value) || 0;
-    const total = amount * currentPrice;
-    const totalWithFee = total + (total * tradingFee);
-    document.getElementById('buyTotal').value = formatTurkishNumber(totalWithFee, 2);
+    
+    if (tradingCurrency === 1) { // TL mode
+        const totalTL = amount * displayPrice; // displayPrice is already in TL
+        const totalWithFee = totalTL + (totalTL * tradingFee);
+        document.getElementById('buyTotal').value = formatTurkishNumber(totalWithFee, 2);
+    } else { // USD mode
+        const totalUSD = amount * currentPriceUSD;
+        const totalWithFee = totalUSD + (totalUSD * tradingFee);
+        document.getElementById('buyTotal').value = formatTurkishNumber(totalWithFee, 2);
+    }
 });
 
 // Calculate sell total
 document.querySelector('#sell input[name="amount"]').addEventListener('input', function() {
     const amount = parseFloat(this.value) || 0;
-    const total = amount * currentPrice;
-    const totalAfterFee = total - (total * tradingFee);
-    document.getElementById('sellTotal').value = formatTurkishNumber(totalAfterFee, 2);
+    
+    if (tradingCurrency === 1) { // TL mode
+        const totalTL = amount * displayPrice; // displayPrice is already in TL
+        const totalAfterFee = totalTL - (totalTL * tradingFee);
+        document.getElementById('sellTotal').value = formatTurkishNumber(totalAfterFee, 2);
+    } else { // USD mode
+        const totalUSD = amount * currentPriceUSD;
+        const totalAfterFee = totalUSD - (totalUSD * tradingFee);
+        document.getElementById('sellTotal').value = formatTurkishNumber(totalAfterFee, 2);
+    }
 });
 
 // Quick amount buttons
 function setQuickAmount(percentage, type) {
     const maxBalance = type === 'buy' ? 
-        <?php echo $balance_tl; ?> / currentPrice : 
-        <?php echo $balance_crypto; ?>;
+        balancePrimary / displayPrice : 
+        balanceCrypto;
     
     const amount = maxBalance * (percentage / 100);
     const input = document.querySelector(`#${type} input[name="amount"]`);
     input.value = amount.toFixed(8);
     input.dispatchEvent(new Event('input'));
+}
+
+// Format Turkish number function
+function formatTurkishNumber(number, decimals = 2) {
+    return number.toLocaleString('tr-TR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
 }
 </script>
 

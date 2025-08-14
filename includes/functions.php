@@ -1062,4 +1062,311 @@ function populateFMPSymbols() {
     
     return $updated;
 }
+
+// ===============================
+// PARAMETRIC TRADING SYSTEM
+// ===============================
+
+/**
+ * Get system parameter value
+ */
+function getSystemParameter($parameter_name, $default = '') {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $query = "SELECT parameter_value FROM system_parameters WHERE parameter_name = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$parameter_name]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return $result ? $result['parameter_value'] : $default;
+}
+
+/**
+ * Set system parameter value
+ */
+function setSystemParameter($parameter_name, $parameter_value) {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $query = "INSERT INTO system_parameters (parameter_name, parameter_value, updated_at) 
+              VALUES (?, ?, CURRENT_TIMESTAMP)
+              ON DUPLICATE KEY UPDATE 
+              parameter_value = VALUES(parameter_value), 
+              updated_at = CURRENT_TIMESTAMP";
+    $stmt = $db->prepare($query);
+    return $stmt->execute([$parameter_name, $parameter_value]);
+}
+
+/**
+ * Get current trading currency (1=TL, 2=USD)
+ */
+function getTradingCurrency() {
+    return (int)getSystemParameter('trading_currency', '1');
+}
+
+/**
+ * Get currency symbol for display
+ */
+function getCurrencySymbol($currency_mode = null) {
+    if ($currency_mode === null) {
+        $currency_mode = getTradingCurrency();
+    }
+    
+    return $currency_mode == 1 ? 'TL' : 'USD';
+}
+
+/**
+ * Get currency field name for database
+ */
+function getCurrencyField($currency_mode = null) {
+    if ($currency_mode === null) {
+        $currency_mode = getTradingCurrency();
+    }
+    
+    return $currency_mode == 1 ? 'tl' : 'usd';
+}
+
+// ===============================
+// EXCHANGE RATE API SYSTEM
+// ===============================
+
+/**
+ * Fetch USD/TRY rate from free API with caching
+ */
+function fetchUSDTRYRate() {
+    // Check cache first
+    $last_update = (int)getSystemParameter('rate_last_update', '0');
+    $current_time = time();
+    
+    // If cache is fresh (less than 5 minutes), return cached rate
+    if (($current_time - $last_update) < EXCHANGE_RATE_CACHE_TIME) {
+        $cached_rate = getSystemParameter('usdtry_rate', '27.45');
+        return (float)$cached_rate;
+    }
+    
+    // Try primary API (exchangerate-api.com - free, no key required)
+    $rate = fetchFromExchangeAPI();
+    
+    // If primary fails, try backup or use cached/default
+    if (!$rate) {
+        $rate = (float)getSystemParameter('usdtry_rate', '27.45');
+    }
+    
+    // Update cache
+    setSystemParameter('usdtry_rate', $rate);
+    setSystemParameter('rate_last_update', $current_time);
+    
+    return $rate;
+}
+
+/**
+ * Fetch rate from primary exchange API
+ */
+function fetchFromExchangeAPI() {
+    try {
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 10,
+                'user_agent' => 'GlobalBorsa/1.0'
+            ]
+        ]);
+        
+        $response = @file_get_contents(EXCHANGE_API_URL, false, $context);
+        
+        if ($response === false) {
+            return false;
+        }
+        
+        $data = json_decode($response, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return false;
+        }
+        
+        // Exchange rate API returns rates object with currency codes
+        if (isset($data['rates']['TRY'])) {
+            return (float)$data['rates']['TRY'];
+        }
+        
+        return false;
+        
+    } catch (Exception $e) {
+        error_log("Exchange API Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Get current USD/TRY rate (cached)
+ */
+function getUSDTRYRate() {
+    return fetchUSDTRYRate();
+}
+
+/**
+ * Convert USD to TL
+ */
+function convertUSDToTL($usd_amount) {
+    $rate = getUSDTRYRate();
+    return $usd_amount * $rate;
+}
+
+/**
+ * Convert TL to USD
+ */
+function convertTLToUSD($tl_amount) {
+    $rate = getUSDTRYRate();
+    return $tl_amount / $rate;
+}
+
+// ===============================
+// UPDATED TRADING FUNCTIONS
+// ===============================
+
+/**
+ * Get user balance based on current trading currency setting
+ */
+function getTradingBalance($user_id) {
+    $currency_field = getCurrencyField();
+    return getUserBalance($user_id, $currency_field);
+}
+
+/**
+ * Updated execute trade function with parametric currency support
+ */
+function executeTradeParametric($user_id, $symbol, $type, $amount, $price_usd) {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    try {
+        $db->beginTransaction();
+        
+        $trading_currency = getTradingCurrency();
+        $currency_field = getCurrencyField($trading_currency);
+        
+        // Calculate total in USD first
+        $total_usd = $amount * $price_usd;
+        $fee_usd = $total_usd * (TRADING_FEE / 100);
+        
+        if ($trading_currency == 1) { // TL mode
+            // Convert to TL
+            $usd_to_tl_rate = getUSDTRYRate();
+            $total_tl = $total_usd * $usd_to_tl_rate;
+            $fee_tl = $fee_usd * $usd_to_tl_rate;
+            $total_with_fee = $total_tl + $fee_tl;
+            
+            if ($type == 'buy') {
+                // Check TL balance
+                $balance = getUserBalance($user_id, 'tl');
+                if ($balance < $total_with_fee) {
+                    throw new Exception('Insufficient TL balance');
+                }
+                
+                // Deduct TL, add crypto
+                updateUserBalance($user_id, 'tl', $total_with_fee, 'subtract');
+                $crypto_currency = strtolower(explode('_', $symbol)[0]);
+                updateUserBalance($user_id, $crypto_currency, $amount, 'add');
+                
+                $final_total = $total_tl;
+                $final_fee = $fee_tl;
+                
+            } else { // sell
+                // Check crypto balance
+                $crypto_currency = strtolower(explode('_', $symbol)[0]);
+                $crypto_balance = getUserBalance($user_id, $crypto_currency);
+                if ($crypto_balance < $amount) {
+                    throw new Exception('Insufficient crypto balance');
+                }
+                
+                // Deduct crypto, add TL
+                updateUserBalance($user_id, $crypto_currency, $amount, 'subtract');
+                updateUserBalance($user_id, 'tl', $total_tl - $fee_tl, 'add');
+                
+                $final_total = $total_tl;
+                $final_fee = $fee_tl;
+            }
+            
+        } else { // USD mode
+            $total_with_fee = $total_usd + $fee_usd;
+            
+            if ($type == 'buy') {
+                // Check USD balance
+                $balance = getUserBalance($user_id, 'usd');
+                if ($balance < $total_with_fee) {
+                    throw new Exception('Insufficient USD balance');
+                }
+                
+                // Deduct USD, add crypto
+                updateUserBalance($user_id, 'usd', $total_with_fee, 'subtract');
+                $crypto_currency = strtolower(explode('_', $symbol)[0]);
+                updateUserBalance($user_id, $crypto_currency, $amount, 'add');
+                
+                $final_total = $total_usd;
+                $final_fee = $fee_usd;
+                
+            } else { // sell
+                // Check crypto balance
+                $crypto_currency = strtolower(explode('_', $symbol)[0]);
+                $crypto_balance = getUserBalance($user_id, $crypto_currency);
+                if ($crypto_balance < $amount) {
+                    throw new Exception('Insufficient crypto balance');
+                }
+                
+                // Deduct crypto, add USD
+                updateUserBalance($user_id, $crypto_currency, $amount, 'subtract');
+                updateUserBalance($user_id, 'usd', $total_usd - $fee_usd, 'add');
+                
+                $final_total = $total_usd;
+                $final_fee = $fee_usd;
+            }
+        }
+        
+        // Record transaction
+        $query = "INSERT INTO transactions (user_id, type, symbol, amount, price, total, fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$user_id, $type, $symbol, $amount, $price_usd, $final_total, $final_fee]);
+        
+        $db->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $db->rollback();
+        error_log("Trade execution error: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Get formatted balance for header display
+ */
+function getFormattedHeaderBalance($user_id) {
+    $trading_currency = getTradingCurrency();
+    $currency_field = getCurrencyField($trading_currency);
+    $currency_symbol = getCurrencySymbol($trading_currency);
+    
+    $balance = getUserBalance($user_id, $currency_field);
+    
+    return formatNumber($balance) . ' ' . $currency_symbol;
+}
+
+/**
+ * Get minimum trade amount in current currency
+ */
+function getMinTradeAmount() {
+    $trading_currency = getTradingCurrency();
+    
+    if ($trading_currency == 1) { // TL
+        return MIN_TRADE_AMOUNT;
+    } else { // USD
+        return MIN_TRADE_AMOUNT / getUSDTRYRate(); // Convert TL to USD
+    }
+}
+
+/**
+ * Format Turkish number (fixing missing function)
+ */
+function formatTurkishNumber($number, $decimals = 2) {
+    return number_format($number, $decimals, ',', '.');
+}
 ?>

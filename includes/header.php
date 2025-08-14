@@ -186,10 +186,10 @@ if (!in_array($current_page, $public_pages)) {
                     </div>
                     
                     <?php if (isLoggedIn()): ?>
-                        <!-- User Balance -->
+                        <!-- User Balance (Parametric) -->
                         <div class="me-3">
                             <small class="text-muted"><?php echo t('balance'); ?>:</small>
-                            <strong class="text-success"><?php echo formatNumber(getUserBalance($_SESSION['user_id'], 'usd')); ?> USD</strong>
+                            <strong class="text-success"><?php echo getFormattedHeaderBalance($_SESSION['user_id']); ?></strong>
                         </div>
                         
                         <!-- User Menu -->
