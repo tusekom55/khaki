@@ -734,11 +734,24 @@ function calculateTrade() {
     const leverage = parseInt(document.getElementById('leverage').value) || 1;
     const priceUSD = parseFloat(document.getElementById('modalPrice').textContent.replace(',', '.'));
     
-    // Amount type kontrolü - default USD
+    // FORCE USD MODE - problem çözümü için
     let amountType = 'usd';
-    const checkedAmountType = document.querySelector('input[name="amountType"]:checked');
-    if (checkedAmountType) {
-        amountType = checkedAmountType.value;
+    
+    // Radio button'ları kontrol et
+    const amountUSDRadio = document.getElementById('amountUSD');
+    const amountLotRadio = document.getElementById('amountLot');
+    
+    console.log('RADIO BUTTON DEBUG:', {
+        amountUSDRadio: amountUSDRadio ? amountUSDRadio.checked : 'not found',
+        amountLotRadio: amountLotRadio ? amountLotRadio.checked : 'not found'
+    });
+    
+    // Force USD mode initially
+    if (amountUSDRadio) {
+        amountUSDRadio.checked = true;
+    }
+    if (amountLotRadio) {
+        amountLotRadio.checked = false;
     }
     
     let totalUSD, lotAmount;
@@ -747,23 +760,18 @@ function calculateTrade() {
         amount: amount,
         priceUSD: priceUSD,
         amountType: amountType,
-        leverage: leverage
+        leverage: leverage,
+        inputElement: document.getElementById('amount') ? 'found' : 'not found'
     });
     
-    // Calculate based on amount type
-    if (amountType === 'usd') {
-        // USD ile işlem - kullanıcı 10 USD girdiyse toplam 10 USD
-        totalUSD = amount;
-        lotAmount = amount / priceUSD;
-    } else {
-        // Lot ile işlem - kullanıcı 1 lot girdiyse toplam 1 * price USD
-        totalUSD = amount * priceUSD;
-        lotAmount = amount;
-    }
+    // ALWAYS USE USD MODE for now
+    totalUSD = amount; // Direct USD amount
+    lotAmount = amount / priceUSD; // Calculate lot equivalent
     
-    console.log('Calculation result:', {
+    console.log('FORCED USD Calculation result:', {
         totalUSD: totalUSD,
-        lotAmount: lotAmount
+        lotAmount: lotAmount,
+        formula: `${amount} USD direct, lot = ${amount} / ${priceUSD}`
     });
     
     // TL MODE HESAPLAMASI - Parametre 1 ise TL modu
